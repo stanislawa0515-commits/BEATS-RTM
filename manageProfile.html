@@ -9,29 +9,15 @@
     <link href="https://fonts.googleapis.com/css2?family=Kanit:ital,wght@1,900&family=Plus+Jakarta+Sans:wght@400;700&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="style.css">
     <style>
-        /* Spliced unique management rules layout to support the look of image_92bf7a.png */
         .edit-overlay-icon {
-            position: absolute;
-            top: 0; left: 0; width: 100%; height: 100%;
+            position: absolute; top: 0; left: 0; width: 100%; height: 100%;
             background: rgba(0, 0, 0, 0.4);
             display: flex; align-items: center; justify-content: center;
         }
-        .edit-overlay-icon svg {
-            width: 32px !important; height: 32px !important; fill: #ffffff !important;
-        }
-        .btn-delete {
-            background-color: #dc3545; margin-top: 12px;
-        }
+        .edit-overlay-icon svg { width: 32px !important; height: 32px !important; fill: #ffffff !important; }
+        .btn-delete { background-color: #dc3545; margin-top: 12px; }
         .btn-delete:hover { background-color: #bd2130; }
-        
-        /* Modal Form container hidden initially */
-        .edit-modal-box {
-            display: none;
-            margin-top: 30px;
-            border-top: 2px dashed var(--border-color);
-            padding-top: 25px;
-            width: 100%;
-        }
+        .edit-modal-box { display: none; margin-top: 30px; border-top: 2px dashed var(--border-color); padding-top: 25px; width: 100%; }
     </style>
 </head>
 <body>
@@ -39,17 +25,13 @@
     <div class="page-body-layout profile-layout-adjustment">
         <div class="profile-selection-container">
             <h1 class="profile-title">Manage Profiles:</h1>
-
-            <!-- Grid dynamically renders edit overlay icons matching image_92bf7a.png -->
             <div class="profiles-grid" id="managementGrid"></div>
 
-            <!-- Contextual Editor Container hidden until user clicks a card -->
             <div class="app-container" style="padding:0;">
                 <div class="form-box edit-modal-box" id="editorContainer">
                     <h2 id="editingTitle">EDIT PROFILE</h2>
                     <form id="editForm">
                         <input type="hidden" id="editProfileId">
-                        
                         <div class="input-group">
                             <label>Change Picture :</label>
                             <input type="file" id="editPhoto" accept="image/*">
@@ -62,36 +44,45 @@
                             <label for="editPassword">Change Password (Optional) :</label>
                             <input type="password" id="editPassword" placeholder="Enter new password or leave blank">
                         </div>
-                        
                         <button type="submit" class="btn">SAVE CHANGES</button>
                         <button type="button" id="deleteBtn" class="btn btn-delete">DELETE PROFILE</button>
                     </form>
                 </div>
             </div>
-
             <button class="manage-btn" style="background:#ffffff; color:#000000;" onclick="window.location.href='user.html'">Done</button>
         </div>
-
         <footer>
             <p>© 2026 RTM Bintulu. All rights reserved.</p>
         </footer>
     </div>
 
-    <script>
+    <script type="module">
+        import { db, doc, getDoc, setDoc } from "./firebase-config.js";
+
         const managementGrid = document.getElementById('managementGrid');
         const editorContainer = document.getElementById('editorContainer');
         const editProfileId = document.getElementById('editProfileId');
         const editName = document.getElementById('editName');
         const editPassword = document.getElementById('editPassword');
         const editingTitle = document.getElementById('editingTitle');
+        const userEmail = localStorage.getItem('currentUserEmail') || 'guest@beats.com';
 
-        let profiles = JSON.parse(localStorage.getItem('beatsProfiles')) || [];
+        let profiles = [];
 
-        // Render the core profile row with pencil overlay graphic
+        async function loadProfiles() {
+            try {
+                const docSnap = await getDoc(doc(db, "beats_profiles", userEmail));
+                profiles = docSnap.exists() ? docSnap.data().profiles || [] : [];
+                renderManagementGrid();
+            } catch (err) {
+                console.error(err);
+            }
+        }
+
         function renderManagementGrid() {
             managementGrid.innerHTML = '';
             if(profiles.length === 0) {
-                managementGrid.innerHTML = '<p class="link-gray">No profiles found to manage. Click Done to return.</p>';
+                managementGrid.innerHTML = '<p class="link-gray">No profiles found to manage.</p>';
                 return;
             }
 
@@ -109,24 +100,20 @@
                     </div>
                     <span class="profile-name">${profile.name}</span>
                 `;
-
                 card.addEventListener('click', () => openEditor(profile));
                 managementGrid.appendChild(card);
             });
         }
 
-        // Display the specific data form fields underneath the grid
         function openEditor(profile) {
             editorContainer.style.display = 'block';
             editingTitle.textContent = `EDITING: ${profile.name.toUpperCase()}`;
             editProfileId.value = profile.id;
             editName.value = profile.name;
             editPassword.value = profile.password || '';
-            window.scrollTo({ top: editorContainer.offsetTop, behavior: 'smooth' });
         }
 
-        // Save modifications
-        document.getElementById('editForm').addEventListener('submit', function(e) {
+        document.getElementById('editForm').addEventListener('submit', async function(e) {
             e.preventDefault();
             const targetId = editProfileId.value;
             const idx = profiles.findIndex(p => p.id === targetId);
@@ -138,36 +125,35 @@
                 const file = document.getElementById('editPhoto').files[0];
                 if (file) {
                     const reader = new FileReader();
-                    reader.onload = function(event) {
+                    reader.onload = async function(event) {
                         profiles[idx].photo = event.target.result;
-                        saveAndReload();
+                        await saveAndReload();
                     };
                     reader.readAsDataURL(file);
                 } else {
-                    saveAndReload();
+                    await saveAndReload();
                 }
             }
         });
 
-        // Delete confirmation hook
-        document.getElementById('deleteBtn').addEventListener('click', function() {
+        document.getElementById('deleteBtn').addEventListener('click', async function() {
             const targetId = editProfileId.value;
             const idx = profiles.findIndex(p => p.id === targetId);
 
-            if (idx !== -1 && confirm(`Delete profile for "${profiles[idx].name}" permanently?`)) {
+            if (idx !== -1 && confirm(`Delete profile permanently?`)) {
                 profiles.splice(idx, 1);
                 editorContainer.style.display = 'none';
-                saveAndReload();
+                await saveAndReload();
             }
         });
 
-        function saveAndReload() {
-            localStorage.setItem('beatsProfiles', JSON.stringify(profiles));
+        async function saveAndReload() {
+            await setDoc(doc(db, "beats_profiles", userEmail), { profiles: profiles });
             alert('Profile configuration updated!');
             renderManagementGrid();
         }
 
-        renderManagementGrid();
+        loadProfiles();
     </script>
 </body>
 </html>

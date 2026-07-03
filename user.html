@@ -9,7 +9,6 @@
     <link href="https://fonts.googleapis.com/css2?family=Kanit:ital,wght@1,900&family=Plus+Jakarta+Sans:wght@400;700&family=Fredoka:wght@400;700&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="style.css">
     <script>
-        // Force the app background to remain on the bright theme version
         document.documentElement.setAttribute('data-theme', 'light');
     </script>
 </head>
@@ -30,34 +29,38 @@
         </div>
 
         <footer>
-            <!-- Bypasses Fredoka to perfectly duplicate the exact system font fallback look from SignIn.html -->
-            <p style="font-family: Arial, Helvetica, sans-serif !important; font-weight: 400 !important; font-size: 0.8rem !important; color: #535370 !important; letter-spacing: normal !important; text-transform: none !important; opacity: 1 !important;">
+            <p style="font-family: Arial, Helvetica, sans-serif !important; font-weight: 400 !important; font-size: 0.8rem !important; color: #535370 !important;">
                 © 2026 RTM Bintulu. All rights reserved.
             </p>
         </footer>
     </div>
 
-    <script>
-        document.addEventListener('DOMContentLoaded', () => {
+    <script type="module">
+        import { db, doc, getDoc } from "./firebase-config.js";
+
+        document.addEventListener('DOMContentLoaded', async () => {
             const profileGrid = document.getElementById('profileGrid');
             const addProfileNode = profileGrid.querySelector('.add-profile');
+            const userEmail = localStorage.getItem('currentUserEmail') || 'guest@beats.com';
             
-            // Fetch saved profiles from localStorage
-            let profiles = JSON.parse(localStorage.getItem('beatsProfiles')) || [];
+            let profiles = [];
+            try {
+                const docSnap = await getDoc(doc(db, "beats_profiles", userEmail));
+                if (docSnap.exists()) {
+                    profiles = docSnap.data().profiles || [];
+                }
+            } catch (err) {
+                console.error("Error loading cloud profiles:", err);
+            }
 
-            // Delay speed factor setting between items (in seconds)
             const staggerDelay = 0.15; 
 
-            // Render existing profiles in front of the Add button one-by-one
             profiles.forEach((profile, index) => {
                 const profileCard = document.createElement('a');
                 profileCard.href = 'dashboard.html';
                 profileCard.className = 'profile-card animate-pop';
-                
-                // Assign calculated progressive animation delays 
                 profileCard.style.animationDelay = `${index * staggerDelay}s`;
                 
-                // Fallback structured vector profile generation logic
                 const imgSource = profile.photo ? profile.photo : `data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="%23535370"><path d="M12 12c2.21 0 4-1.79 4-4s-1.79-4-4-4-4 1.79-4 4 1.79 4 4 4zm0 2c-2.67 0-8 1.34-8 4v2h16v-2c0-2.66-5.33-4-8-4z"/></svg>`;
 
                 profileCard.innerHTML = `
@@ -67,7 +70,6 @@
                     <span class="profile-name">${profile.name}</span>
                 `;
                 
-                // FIXED: Intercept clicks completely to guarantee sessionStorage saves before redirecting
                 profileCard.addEventListener('click', (e) => {
                     e.preventDefault(); 
                     
@@ -80,7 +82,6 @@
                             alert('Incorrect Password!');
                         }
                     } else {
-                        // Standard profile without password saves name and goes to dashboard instantly
                         sessionStorage.setItem('activeProfileName', profile.name);
                         window.location.href = 'dashboard.html';
                     }
@@ -89,7 +90,6 @@
                 profileGrid.insertBefore(profileCard, addProfileNode);
             });
 
-            // Make sure the static "Add Profile" block slides into place last
             addProfileNode.classList.add('animate-pop');
             addProfileNode.style.animationDelay = `${profiles.length * staggerDelay}s`;
         });

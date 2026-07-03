@@ -8,43 +8,7 @@
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Fredoka:ital,wght@1,900&family=Kanit:ital,wght@1,900&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="style.css">
-    <style>
-        .edit-overlay-icon {
-            position: absolute;
-            top: 0; left: 0; width: 100%; height: 100%;
-            background: rgba(0, 0, 0, 0.4);
-            display: flex; align-items: center; justify-content: center;
-        }
-        .edit-overlay-icon svg {
-            width: 32px !important; height: 32px !important; fill: #ffffff !important;
-        }
-        .btn-delete {
-            background-color: #dc3545; margin-top: 12px;
-        }
-        .btn-delete:hover { background-color: #bd2130; }
-        
-        .edit-modal-box {
-            display: none;
-            margin-top: 30px;
-            border-top: 2px dashed var(--border-color);
-            padding-top: 25px;
-            width: 100%;
-        }
-        .row-btn {
-            border: none;
-            padding: 6px 12px;
-            border-radius: 4px;
-            color: white;
-            font-weight: bold;
-            cursor: pointer;
-            margin: 2px;
-        }
-        .row-btn-save { background-color: #28a745; }
-        .row-btn-edit { background-color: #ffc107; color: #333; }
-        .row-btn-edit:disabled { background-color: #cccccc; color: #666; cursor: not-allowed; }
-        .row-btn-delete { background-color: #dc3545; }
-    </style>
-</body >
+</head>
 <body class="page-body-layout">
  
     <div class="menu-header-bar">
@@ -65,7 +29,6 @@
                 <a href="SignIn.html" id="logoutActionLink" style="text-decoration: none; font-size: 1.1rem;">Logout</a>
             </div>
         </div>
-
         <div class="theme-toggle-row" style="margin-bottom: 10px; display: flex; justify-content: space-between; align-items: center; border-top: 1px solid #eee; padding-top: 15px;">
             <span style="font-size: 0.95rem; font-weight: 500;">Theme Mode</span>
             <button class="theme-switch-btn" id="themeSwitchTrigger" style="cursor: pointer;">☀️ / 🌙</button>
@@ -73,7 +36,6 @@
     </div>
  
     <div class="conti-big-box" style="margin-top: 40px; padding-top: 20px;">
- 
         <div style="text-align: center; margin-bottom: 25px;">
             <img src="BINTULUfm.png" alt="BINTULUfm Logo" style="max-height: 50px; width: auto; display: block; margin: 0 auto 10px auto;">
             <div class="conti-title" style="text-align: center; margin: 0;">Conti Logs</div>
@@ -114,7 +76,7 @@
     <footer>
         <p>© 2026 RTM Bintulu. All rights reserved.</p>
     </footer>
-
+ 
     <script type="module">
         import { db, doc, getDoc, setDoc } from "./firebase-config.js";
 
@@ -124,29 +86,19 @@
         const menuOverlay = document.getElementById('menuOverlay');
         const themeSwitchTrigger = document.getElementById('themeSwitchTrigger');
         const displayUsername = document.getElementById('displayUsername');
-        const logoutActionLink = document.getElementById('logoutActionLink');
  
-        const activeUser = sessionStorage.getItem('activeProfileName') || 
-                           localStorage.getItem('activeProfileName') || 
-                           sessionStorage.getItem('currentUser') || 
-                           localStorage.getItem('currentUser') || 
-                           'User';
+        const activeUser = sessionStorage.getItem('activeProfileName') || localStorage.getItem('currentUser') || 'User';
         if (displayUsername) displayUsername.textContent = activeUser;
 
         if(localStorage.getItem('theme') === 'dark') { document.documentElement.setAttribute('data-theme', 'dark'); }
  
         function toggleSidebar(open) {
-            if(open) { 
-                sidebarDrawer.classList.add('open'); 
-                menuOverlay.classList.add('show'); 
-            } else { 
-                sidebarDrawer.classList.remove('open'); 
-                menuOverlay.classList.remove('show'); 
-            }
+            sidebarDrawer.classList.toggle('open', open);
+            menuOverlay.classList.toggle('show', open);
         }
-        if (openMenuToggle) openMenuToggle.addEventListener('click', () => toggleSidebar(true));
-        if (closeMenuToggle) closeMenuToggle.addEventListener('click', () => toggleSidebar(false));
-        if (menuOverlay) menuOverlay.addEventListener('click', () => toggleSidebar(false));
+        openMenuToggle.addEventListener('click', () => toggleSidebar(true));
+        closeMenuToggle.addEventListener('click', () => toggleSidebar(false));
+        menuOverlay.addEventListener('click', () => toggleSidebar(false));
  
         themeSwitchTrigger.addEventListener('click', () => {
             if(document.documentElement.hasAttribute('data-theme')) {
@@ -158,20 +110,12 @@
             }
         });
  
-        const rawPerson = sessionStorage.getItem('activeConti_Person') || localStorage.getItem('activeConti_Person') || 'DJ A';
-        const activeDate = sessionStorage.getItem('activeConti_Date') || localStorage.getItem('activeConti_Date') || '2026-06-29';
-        const activeInterval = sessionStorage.getItem('activeConti_Interval') || localStorage.getItem('activeConti_Interval') || '02:00pm - 08:00pm';
+        const rawPerson = localStorage.getItem('activeConti_Person') || 'DJ A';
+        const activeDate = localStorage.getItem('activeConti_Date') || '2026-06-29';
+        const activeInterval = localStorage.getItem('activeConti_Interval') || '02:00pm - 08:00pm';
  
-        const personNameMapping = {
-            'DJ A': 'DJ Ruth',
-            'DJ B': 'DJ Flora',
-            'DJ C': 'DJ Yon',
-            'DJ D': 'DJ Zana',
-            'DJ E': 'DJ Shah'
-        };
-        const activePerson = personNameMapping[rawPerson] || rawPerson;
-
-        document.getElementById('lblPerson').textContent = activePerson;
+        const personNameMapping = { 'DJ A': 'DJ Ruth', 'DJ B': 'DJ Flora', 'DJ C': 'DJ Yon', 'DJ D': 'DJ Zana', 'DJ E': 'DJ Shah' };
+        document.getElementById('lblPerson').textContent = personNameMapping[rawPerson] || rawPerson;
         document.getElementById('lblDate').textContent = activeDate;
         document.getElementById('lblInterval').textContent = activeInterval;
  
@@ -181,186 +125,66 @@
         function generateTimeDropdowns(savedHour='', savedMin='', savedAmpm='') {
             let hHTML = '<select class="row-hour table-dropdown">';
             for(let i=1; i<=12; i++) {
-                let val = i < 10 ? '0'+i : i;
-                let selected = val == savedHour ? 'selected' : '';
-                hHTML += `<option value="${val}" ${selected}>${val}</option>`;
+                hHTML += `<option value="${String(i).padStart(2,'0')}" ${String(i).padStart(2,'0')==savedHour?'selected':''}>${String(i).padStart(2,'0')}</option>`;
             }
             hHTML += '</select>';
- 
             let mHTML = '<select class="row-minute table-dropdown">';
             for(let i=0; i<=59; i++) {
-                let val = i < 10 ? '0'+i : i;
-                let selected = val == savedMin ? 'selected' : '';
-                mHTML += `<option value="${val}" ${selected}>${val}</option>`;
+                hHTML += `<option value="${String(i).padStart(2,'0')}" ${String(i).padStart(2,'0')==savedMin?'selected':''}>${String(i).padStart(2,'0')}</option>`;
             }
             hHTML += '</select>';
- 
-            let apHTML = '<select class="row-ampm table-dropdown">';
-            apHTML += `<option value="AM" ${savedAmpm==='AM'?'selected':''}>AM</option>`;
-            apHTML += `<option value="PM" ${savedAmpm==='PM'?'selected':''}>PM</option>`;
-            apHTML += '</select>';
- 
+            let apHTML = `<select class="row-ampm table-dropdown"><option value="AM" ${savedAmpm==='AM'?'selected':''}>AM</option><option value="PM" ${savedAmpm==='PM'?'selected':''}>PM</option></select>`;
             return `<div class="row-time-select-container">${hHTML}<span>:</span>${mHTML}${apHTML}</div>`;
         }
  
         window.createLogTableRow = function(dataObj = {}, isSaved = false) {
             const tr = document.createElement('tr');
-               
-            const hourVal = dataObj.hour || '09';
-            const minVal = dataObj.minute || '00';
-            const ampmVal = dataObj.ampm || 'AM';
-            const titleVal = dataObj.title || '';
-            const lrVal = dataObj.lr || 'L';
-            const producerVal = dataObj.producer || '';
-            const netiaVal = dataObj.netia || '';
-            const remarksVal = dataObj.remarks || '';
- 
             tr.innerHTML = `
-                <td>${generateTimeDropdowns(hourVal, minVal, ampmVal)}</td>
-                <td><div contenteditable="true" class="table-text-editable row-title" data-placeholder="Enter title" style="border: 1px solid #ccc; padding: 4px; min-height: 20px; border-radius: 4px;">${titleVal}</div></td>
+                <td>${generateTimeDropdowns(dataObj.hour || '09', dataObj.minute || '00', dataObj.ampm || 'AM')}</td>
+                <td><div contenteditable="true" class="table-text-editable row-title" style="border:1px solid #ccc; padding:4px;">${dataObj.title || ''}</div></td>
+                <td><select class="row-lr"><option value="L" ${dataObj.lr==='L'?'selected':''}>L</option><option value="R" ${dataObj.lr==='R'?'selected':''}>R</option></select></td>
+                <td><div contenteditable="true" class="table-text-editable row-producer" style="border:1px solid #ccc; padding:4px;">${dataObj.producer || ''}</div></td>
+                <td><select class="row-netia"><option value="">--</option><option value="Netia" ${dataObj.netia==='Netia'?'selected':''}>Netia</option><option value="CD" ${dataObj.netia==='CD'?'selected':''}>CD</option></select></td>
+                <td><div contenteditable="true" class="table-text-editable row-remarks" style="border:1px solid #ccc; padding:4px;">${dataObj.remarks || ''}</div></td>
                 <td>
-                    <select class="table-dropdown row-lr">
-                        <option value="L" ${lrVal==='L'?'selected':''}>L</option>
-                        <option value="R" ${lrVal==='R'?'selected':''}>R</option>
-                    </select>
-                </td>
-                <td><div contenteditable="true" class="table-text-editable row-producer" data-placeholder="Enter broadcaster" style="border: 1px solid #ccc; padding: 4px; min-height: 20px; border-radius: 4px;">${producerVal}</div></td>
-                <td>
-                    <select class="table-dropdown row-netia">
-                        <option value="" ${netiaVal===''?'selected':''}>--</option>
-                        <option value="Netia" ${netiaVal==='Netia'?'selected':''}>Netia</option>
-                        <option value="CD" ${netiaVal==='CD'?'selected':''}>CD</option>
-                    </select>
-                </td>
-                <td><div contenteditable="true" class="table-text-editable row-remarks" data-placeholder="Enter remarks" style="border: 1px solid #ccc; padding: 4px; min-height: 20px; border-radius: 4px;">${remarksVal}</div></td>
-                <td>
-                    <div class="actions-cell-wrapper">
-                        <button type="button" class="row-btn row-btn-save">Save</button>
-                        <button type="button" class="row-btn row-btn-edit" ${!isSaved ? 'disabled' : ''}>Edit</button>
-                        <button type="button" class="row-btn row-btn-delete">Delete</button>
-                    </div>
+                    <button type="button" class="row-btn row-btn-save">Save</button>
+                    <button type="button" class="row-btn row-btn-edit" ${!isSaved ? 'disabled' : ''}>Edit</button>
+                    <button type="button" class="row-btn row-btn-delete">Delete</button>
                 </td>
             `;
- 
-            if (isSaved) { toggleRowInputState(tr, false); }
-               
+            if (isSaved) toggleRowInputState(tr, false);
             tr.querySelector('.row-btn-save').addEventListener('click', (e) => saveIndividualRow(e.target));
             tr.querySelector('.row-btn-edit').addEventListener('click', (e) => editIndividualRow(e.target));
             tr.querySelector('.row-btn-delete').addEventListener('click', (e) => deleteIndividualRow(e.target));
-
             tableBody.appendChild(tr);
         };
  
         function toggleRowInputState(trRow, enabled) {
-            const selectElements = trRow.querySelectorAll('select');
-            const editableDivs = trRow.querySelectorAll('.table-text-editable');
-               
-            selectElements.forEach(el => el.disabled = !enabled);
-            editableDivs.forEach(el => el.setAttribute('contenteditable', enabled ? 'true' : 'false'));
-               
-            const btnSave = trRow.querySelector('.row-btn-save');
-            const btnEdit = trRow.querySelector('.row-btn-edit');
-               
-            if (enabled) {
-                btnSave.disabled = false;
-                btnEdit.disabled = true;
-            } else {
-                btnSave.disabled = true;
-                btnEdit.disabled = false;
-            }
+            trRow.querySelectorAll('select').forEach(el => el.disabled = !enabled);
+            trRow.querySelectorAll('.table-text-editable').forEach(el => el.setAttribute('contenteditable', enabled ? 'true' : 'false'));
+            trRow.querySelector('.row-btn-save').disabled = !enabled;
+            trRow.querySelector('.row-btn-edit').disabled = enabled;
         }
  
         function saveIndividualRow(buttonElement) {
             const tr = buttonElement.closest('tr');
-            const title = tr.querySelector('.row-title').textContent.trim();
-            if(!title) {
-                alert('Please fill in the Program / Segment Title before saving this row entry.');
-                return;
-            }
+            if(!tr.querySelector('.row-title').textContent.trim()) { alert('Title is required.'); return; }
             toggleRowInputState(tr, false);
         }
  
-        function editIndividualRow(buttonElement) {
-            const tr = buttonElement.closest('tr');
-            toggleRowInputState(tr, true);
-        }
+        function editIndividualRow(buttonElement) { toggleRowInputState(buttonElement.closest('tr'), true); }
  
         async function deleteIndividualRow(buttonElement) {
             const tr = buttonElement.closest('tr');
-               
-            if(confirm("Permanently remove this row entry from current view log?")) {
+            if(confirm("Permanently remove this row?")) {
                 tr.remove();
-                   
-                const remainingRows = tableBody.querySelectorAll('tr');
-                const updatedPayload = [];
-                   
-                remainingRows.forEach(row => {
-                    const titleText = row.querySelector('.row-title').textContent.trim();
-                    if(titleText) { 
-                        updatedPayload.push({
-                            hour: row.querySelector('.row-hour').value,
-                            minute: row.querySelector('.row-minute').value,
-                            ampm: row.querySelector('.row-ampm').value,
-                            title: titleText,
-                            lr: row.querySelector('.row-lr').value,
-                            producer: row.querySelector('.row-producer').textContent.trim(),
-                            netia: row.querySelector('.row-netia').value,
-                            remarks: row.querySelector('.row-remarks').textContent.trim()
-                        });
-                    }
-                });
-
-                try {
-                    await setDoc(doc(db, "beats_conti_sheets", storageKeyPointer), {
-                        metaPerson: rawPerson,
-                        metaDate: activeDate,
-                        metaInterval: activeInterval,
-                        rows: updatedPayload,
-                        updatedAt: Date.now()
-                    });
-                } catch(err) {
-                    console.error("Auto delete sync failure:", err);
-                }
-
-                if (tableBody.children.length === 0) {
-                    createLogTableRow({}, false);
-                }
+                await saveTablePayload();
             }
         }
- 
-        async function initialWorkspaceLoader() {
-            try {
-                const docSnap = await getDoc(doc(db, "beats_conti_sheets", storageKeyPointer));
-                if (docSnap.exists()) {
-                    const datasetsParsed = docSnap.data().rows || [];
-                    if (datasetsParsed.length > 0) {
-                        tableBody.innerHTML = '';
-                        datasetsParsed.forEach(item => {
-                            createLogTableRow(item, true);
-                        });
-                        return;
-                    }
-                }
-            } catch (err) {
-                console.error("Firebase fetch failure:", err);
-            }
-            tableBody.innerHTML = '';
-            createLogTableRow({}, false);
-        }
- 
-        document.getElementById('btnAddRow').addEventListener('click', () => {
-            createLogTableRow({}, false);
-        });
- 
-        document.getElementById('btnSaveChanges').addEventListener('click', async () => {
-            const completeRows = tableBody.querySelectorAll('tr');
+
+        async function saveTablePayload() {
             const savedDatasetPayload = [];
-            let verificationAlertStatus = true;
- 
-            completeRows.forEach(row => {
-                const btnSave = row.querySelector('.row-btn-save');
-                if (btnSave && !btnSave.disabled) { verificationAlertStatus = false; }
- 
+            tableBody.querySelectorAll('tr').forEach(row => {
                 savedDatasetPayload.push({
                     hour: row.querySelector('.row-hour').value,
                     minute: row.querySelector('.row-minute').value,
@@ -372,35 +196,31 @@
                     remarks: row.querySelector('.row-remarks').textContent.trim()
                 });
             });
- 
-            if(!verificationAlertStatus) {
-                const confirmChoice = confirm("Some modifications are unsaved. Would you like to commit all structural table data cells into persistent records storage logs?");
-                if(!confirmChoice) return;
-            }
- 
-            try {
-                await setDoc(doc(db, "beats_conti_sheets", storageKeyPointer), {
-                    metaPerson: rawPerson,
-                    metaDate: activeDate,
-                    metaInterval: activeInterval,
-                    rows: savedDatasetPayload,
-                    updatedAt: Date.now()
-                });
-                alert('Conti Sheet logs records saved successfully to cloud repository!');
-                initialWorkspaceLoader();
-            } catch (err) {
-                console.error("Firebase collection save failure:", err);
-                alert("Cloud system sync operation failed.");
-            }
-        });
- 
-        if (logoutActionLink) {
-            logoutActionLink.addEventListener('click', () => {
-                localStorage.clear();
-                sessionStorage.clear();
+            await setDoc(doc(db, "beats_conti_sheets", storageKeyPointer), {
+                metaPerson: rawPerson, metaDate: activeDate, metaInterval: activeInterval, rows: savedDatasetPayload, updatedAt: Date.now()
             });
         }
-
+ 
+        async function initialWorkspaceLoader() {
+            try {
+                const docSnap = await getDoc(doc(db, "beats_conti_sheets", storageKeyPointer));
+                if (docSnap.exists()) {
+                    const rows = docSnap.data().rows || [];
+                    tableBody.innerHTML = '';
+                    rows.forEach(item => createLogTableRow(item, true));
+                    return;
+                }
+            } catch(e) { console.error(e); }
+            tableBody.innerHTML = ''; createLogTableRow({}, false);
+        }
+ 
+        document.getElementById('btnAddRow').addEventListener('click', () => createLogTableRow({}, false));
+        document.getElementById('btnSaveChanges').addEventListener('click', async () => {
+            await saveTablePayload();
+            alert('Conti Sheet logs records saved successfully to cloud repository!');
+            initialWorkspaceLoader();
+        });
+        document.getElementById('btnPrintLog').addEventListener('click', () => window.print());
         window.addEventListener('DOMContentLoaded', initialWorkspaceLoader);
     </script>
 </body>

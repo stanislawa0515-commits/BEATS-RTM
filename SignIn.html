@@ -56,7 +56,6 @@
             let authenticatedUsername = "";
             let isAdmin = false;
  
-            // 1. Check for Enforced Master Admin Access Rules Matrix
             if (email === 'admin@beats.com') {
                 if (password === 'adminRTMBtu2026') {
                     authenticatedUsername = 'Admin';
@@ -66,7 +65,6 @@
                     return;
                 }
             } 
-            // 2. Fetch data records from Firebase matching input email doc parameter
             else {
                 try {
                     const userDocRef = doc(db, "beats_users", email);
@@ -94,10 +92,11 @@
             }
  
             localStorage.setItem('currentUser', authenticatedUsername);
+            localStorage.setItem('currentUserEmail', email);
             alert('Welcome back! Logging into: ' + authenticatedUsername);
  
             if (isAdmin) {
-                window.location.href = 'adminDashboard.html';
+                window.location.href = 'AdminDashboard.html';
             } else {
                 window.location.href = 'user.html';
             }

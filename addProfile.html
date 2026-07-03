@@ -6,7 +6,7 @@
     <title>BEATS - Add Profile</title>
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Fredoka:ital,wght@1,900&family=Kanit:ital,wght@1,900&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2 family=Fredoka:ital,wght@1,900&family=Kanit:ital,wght@1,900&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="style.css">
     <script>
         document.documentElement.setAttribute('data-theme', 'light');
@@ -49,33 +49,43 @@
         </footer>
     </div>
 
-    <script>
+    <script type="module">
+        import { db, doc, getDoc, setDoc } from "./firebase-config.js";
+
         document.getElementById('addProfileForm').addEventListener('submit', function(e) {
             e.preventDefault();
             
             const nameInput = document.getElementById('profileName').value.trim();
             const passwordInput = document.getElementById('profilePassword').value;
             const photoFile = document.getElementById('profilePhoto').files[0];
+            const userEmail = localStorage.getItem('currentUserEmail') || 'guest@beats.com';
 
-            const saveNewProfile = (photoUrl) => {
-                let profiles = JSON.parse(localStorage.getItem('beatsProfiles')) || [];
-                
-                const duplicate = profiles.find(p => p.name.toLowerCase() === nameInput.toLowerCase());
-                if (duplicate) {
-                    alert('A profile with this DJ name already exists!');
-                    return;
+            const saveNewProfile = async (photoUrl) => {
+                try {
+                    const docRef = doc(db, "beats_profiles", userEmail);
+                    const docSnap = await getDoc(docRef);
+                    let profiles = docSnap.exists() ? docSnap.data().profiles || [] : [];
+                    
+                    const duplicate = profiles.find(p => p.name.toLowerCase() === nameInput.toLowerCase());
+                    if (duplicate) {
+                        alert('A profile with this DJ name already exists!');
+                        return;
+                    }
+
+                    profiles.push({
+                        id: 'prof_' + Date.now(), 
+                        name: nameInput,
+                        password: passwordInput ? passwordInput : null,
+                        photo: photoUrl
+                    });
+
+                    await setDoc(docRef, { profiles: profiles });
+                    alert('Profile created successfully!');
+                    window.location.href = 'user.html';
+                } catch (err) {
+                    console.error("Cloud profile save error:", err);
+                    alert("Sync failed. Check database permissions.");
                 }
-
-                profiles.push({
-                    id: 'prof_' + Date.now(), 
-                    name: nameInput,
-                    password: passwordInput ? passwordInput : null,
-                    photo: photoUrl
-                });
-
-                localStorage.setItem('beatsProfiles', JSON.stringify(profiles));
-                alert('Profile created successfully!');
-                window.location.href = 'user.html';
             };
 
             if (photoFile) {
