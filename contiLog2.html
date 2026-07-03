@@ -1,0 +1,404 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>BEATS - Conti Log Timetable Worksheet</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Fredoka:ital,wght@1,900&family=Kanit:ital,wght@1,900&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="style.css">
+    <style>
+        .edit-overlay-icon {
+            position: absolute;
+            top: 0; left: 0; width: 100%; height: 100%;
+            background: rgba(0, 0, 0, 0.4);
+            display: flex; align-items: center; justify-content: center;
+        }
+        .edit-overlay-icon svg {
+            width: 32px !important; height: 32px !important; fill: #ffffff !important;
+        }
+        .btn-delete {
+            background-color: #dc3545; margin-top: 12px;
+        }
+        .btn-delete:hover { background-color: #bd2130; }
+        
+        .edit-modal-box {
+            display: none;
+            margin-top: 30px;
+            border-top: 2px dashed var(--border-color);
+            padding-top: 25px;
+            width: 100%;
+        }
+        .row-btn {
+            border: none;
+            padding: 6px 12px;
+            border-radius: 4px;
+            color: white;
+            font-weight: bold;
+            cursor: pointer;
+            margin: 2px;
+        }
+        .row-btn-save { background-color: #28a745; }
+        .row-btn-edit { background-color: #ffc107; color: #333; }
+        .row-btn-edit:disabled { background-color: #cccccc; color: #666; cursor: not-allowed; }
+        .row-btn-delete { background-color: #dc3545; }
+    </style>
+</head>
+<body class="page-body-layout">
+ 
+    <div class="menu-header-bar">
+        <div class="left-nav-group">
+            <button class="hamburger-btn" id="openMenuToggle" style="cursor: pointer; background: none; border: none; font-size: 1.5rem;">☰</button>
+            <div class="user-greeting">Hi, <span id="displayUsername">User</span></div>
+        </div>
+        <div style="font-family: 'Kanit', sans-serif; font-weight: 900; color: #dc2b5c; font-size: 1.5rem; font-style: italic;">BEATS</div>
+    </div>
+ 
+    <div class="overlay-screen" id="menuOverlay"></div>
+    <div class="nav-sidebar" id="sidebarDrawer">
+        <div>
+            <button class="close-menu-btn" id="closeMenuToggle" style="background: none; border: none; font-size: 1.2rem; cursor: pointer; float: right;">✕</button>
+            <div class="sidebar-links" style="margin-top: 40px; display: flex; flex-direction: column; gap: 20px;">
+                <a href="dashboard.html" style="text-decoration: none; font-size: 1.1rem;">Dashboard</a>
+                <a href="AboutMe.html" style="text-decoration: none; font-size: 1.1rem;">About me</a>
+                <a href="SignIn.html" id="logoutActionLink" style="text-decoration: none; font-size: 1.1rem;">Logout</a>
+            </div>
+        </div>
+
+        <div class="theme-toggle-row" style="margin-bottom: 10px; display: flex; justify-content: space-between; align-items: center; border-top: 1px solid #eee; padding-top: 15px;">
+            <span style="font-size: 0.95rem; font-weight: 500;">Theme Mode</span>
+            <button class="theme-switch-btn" id="themeSwitchTrigger" style="cursor: pointer;">☀️ / 🌙</button>
+        </div>
+    </div>
+ 
+    <div class="conti-big-box" style="margin-top: 40px; padding-top: 20px;">
+ 
+        <div style="text-align: center; margin-bottom: 25px;">
+            <img src="BINTULUfm.png" alt="BINTULUfm Logo" style="max-height: 50px; width: auto; display: block; margin: 0 auto 10px auto;">
+            <div class="conti-title" style="text-align: center; margin: 0;">Conti Logs</div>
+        </div>
+
+        <div class="metadata-summary-bar">
+            <div>Person on Duty : <span id="lblPerson" class="meta-highlight" style="color: #dc2b5c; font-weight: bold;">--</span></div>
+            <div>Date : <span id="lblDate" class="meta-highlight" style="color: #dc2b5c; font-weight: bold;">--</span></div>
+            <div>Shift Interval : <span id="lblInterval" class="meta-highlight" style="color: #dc2b5c; font-weight: bold;">--</span></div>
+        </div>
+ 
+        <div class="table-responsive-container">
+            <table class="conti-table" id="logTable">
+                <thead>
+                    <tr>
+                        <th style="width: 18%;">Time</th>
+                        <th style="width: 22%;">Program / Segment Title</th>
+                        <th style="width: 10%;">L/R</th>
+                        <th style="width: 20%;">Broadcaster</th>
+                        <th style="width: 10%;">Netia / CD</th>
+                        <th style="width: 15%;">Remarks</th>
+                        <th style="width: 15%;">Action</th>
+                    </tr>
+                </thead>
+                <tbody id="tableLogBody"></tbody>
+            </table>
+        </div>
+ 
+        <div class="bottom-buttons-grid">
+            <button class="action-btn-pill btn-cyan-pill" id="btnAddRow">Add New Row</button>
+            <div style="display: flex; gap: 12px;">
+                <button class="action-btn-pill btn-magenta-pill" id="btnSaveChanges">Save Changes</button>
+                <button class="action-btn-pill btn-dark-pill" id="btnPrintLog">Print</button>
+            </div>
+        </div>
+    </div>
+ 
+    <footer>
+        <p>© 2026 RTM Bintulu. All rights reserved.</p>
+    </footer>
+ 
+    <script>
+        const openMenuToggle = document.getElementById('openMenuToggle');
+        const closeMenuToggle = document.getElementById('closeMenuToggle');
+        const sidebarDrawer = document.getElementById('sidebarDrawer');
+        const menuOverlay = document.getElementById('menuOverlay');
+        const themeSwitchTrigger = document.getElementById('themeSwitchTrigger');
+        const displayUsername = document.getElementById('displayUsername');
+        const logoutActionLink = document.getElementById('logoutActionLink');
+ 
+        const activeUser = sessionStorage.getItem('activeProfileName') || 
+                           localStorage.getItem('activeProfileName') || 
+                           sessionStorage.getItem('currentUser') || 
+                           localStorage.getItem('currentUser') || 
+                           'User';
+        if (displayUsername) displayUsername.textContent = activeUser;
+
+        if(localStorage.getItem('theme') === 'dark') { document.documentElement.setAttribute('data-theme', 'dark'); }
+ 
+        function toggleSidebar(open) {
+            if(open) { 
+                sidebarDrawer.classList.add('open'); 
+                menuOverlay.classList.add('show'); 
+            } else { 
+                sidebarDrawer.classList.remove('open'); 
+                menuOverlay.classList.remove('show'); 
+            }
+        }
+        if (openMenuToggle) openMenuToggle.addEventListener('click', () => toggleSidebar(true));
+        if (closeMenuToggle) closeMenuToggle.addEventListener('click', () => toggleSidebar(false));
+        if (menuOverlay) menuOverlay.addEventListener('click', () => toggleSidebar(false));
+ 
+        themeSwitchTrigger.addEventListener('click', () => {
+            if(document.documentElement.hasAttribute('data-theme')) {
+                document.documentElement.removeAttribute('data-theme');
+                localStorage.setItem('theme', 'light');
+            } else {
+                document.documentElement.setAttribute('data-theme', 'dark');
+                localStorage.setItem('theme', 'dark');
+            }
+        });
+ 
+        const rawPerson = sessionStorage.getItem('activeConti_Person') || localStorage.getItem('activeConti_Person') || 'DJ A';
+        const activeDate = sessionStorage.getItem('activeConti_Date') || localStorage.getItem('activeConti_Date') || '2026-06-29';
+        const activeInterval = sessionStorage.getItem('activeConti_Interval') || localStorage.getItem('activeConti_Interval') || '02:00pm - 08:00pm';
+ 
+        const personNameMapping = {
+            'DJ A': 'DJ Ruth',
+            'DJ B': 'DJ Flora',
+            'DJ C': 'DJ Yon',
+            'DJ D': 'DJ Zana',
+            'DJ E': 'DJ Shah'
+        };
+        const activePerson = personNameMapping[rawPerson] || rawPerson;
+
+        document.getElementById('lblPerson').textContent = activePerson;
+        document.getElementById('lblDate').textContent = activeDate;
+        document.getElementById('lblInterval').textContent = activeInterval;
+ 
+        const storageKeyPointer = `beats_sheet_${rawPerson}_${activeDate}_${activeInterval.replace(/\s+/g, '')}`;
+        const tableBody = document.getElementById('tableLogBody');
+ 
+        function generateTimeDropdowns(savedHour='', savedMin='', savedAmpm='') {
+            let hHTML = '<select class="row-hour table-dropdown">';
+            for(let i=1; i<=12; i++) {
+                let val = i < 10 ? '0'+i : i;
+                let selected = val == savedHour ? 'selected' : '';
+                hHTML += `<option value="${val}" ${selected}>${val}</option>`;
+            }
+            hHTML += '</select>';
+ 
+            let mHTML = '<select class="row-minute table-dropdown">';
+            for(let i=0; i<=59; i++) {
+                let val = i < 10 ? '0'+i : i;
+                let selected = val == savedMin ? 'selected' : '';
+                mHTML += `<option value="${val}" ${selected}>${val}</option>`;
+            }
+            hHTML += '</select>';
+ 
+            let apHTML = '<select class="row-ampm table-dropdown">';
+            apHTML += `<option value="AM" ${savedAmpm==='AM'?'selected':''}>AM</option>`;
+            apHTML += `<option value="PM" ${savedAmpm==='PM'?'selected':''}>PM</option>`;
+            apHTML += '</select>';
+ 
+            return `<div class="row-time-select-container">${hHTML}<span>:</span>${mHTML}${apHTML}</div>`;
+        }
+ 
+        function createLogTableRow(dataObj = {}, isSaved = false) {
+            const tr = document.createElement('tr');
+               
+            const hourVal = dataObj.hour || '09';
+            const minVal = dataObj.minute || '00';
+            const ampmVal = dataObj.ampm || 'AM';
+            const titleVal = dataObj.title || '';
+            const lrVal = dataObj.lr || 'L';
+            const producerVal = dataObj.producer || '';
+            const netiaVal = dataObj.netia || '';
+            const remarksVal = dataObj.remarks || '';
+ 
+            tr.innerHTML = `
+                <td>${generateTimeDropdowns(hourVal, minVal, ampmVal)}</td>
+                <td><div contenteditable="true" class="table-text-editable row-title" data-placeholder="Enter title" style="border: 1px solid #ccc; padding: 4px; min-height: 20px; border-radius: 4px;">${titleVal}</div></td>
+                <td>
+                    <select class="table-dropdown row-lr">
+                        <option value="L" ${lrVal==='L'?'selected':''}>L</option>
+                        <option value="R" ${lrVal==='R'?'selected':''}>R</option>
+                    </select>
+                </td>
+                <td><div contenteditable="true" class="table-text-editable row-producer" data-placeholder="Enter broadcaster" style="border: 1px solid #ccc; padding: 4px; min-height: 20px; border-radius: 4px;">${producerVal}</div></td>
+                <td>
+                    <select class="table-dropdown row-netia">
+                        <option value="" ${netiaVal===''?'selected':''}>--</option>
+                        <option value="Netia" ${netiaVal==='Netia'?'selected':''}>Netia</option>
+                        <option value="CD" ${netiaVal==='CD'?'selected':''}>CD</option>
+                    </select>
+                </td>
+                <td><div contenteditable="true" class="table-text-editable row-remarks" data-placeholder="Enter remarks" style="border: 1px solid #ccc; padding: 4px; min-height: 20px; border-radius: 4px;">${remarksVal}</div></td>
+                <td>
+                    <div class="actions-cell-wrapper">
+                        <button type="button" class="row-btn row-btn-save">Save</button>
+                        <button type="button" class="row-btn row-btn-edit" ${!isSaved ? 'disabled' : ''}>Edit</button>
+                        <button type="button" class="row-btn row-btn-delete">Delete</button>
+                    </div>
+                </td>
+            `;
+ 
+            if (isSaved) { toggleRowInputState(tr, false); }
+               
+            tr.querySelector('.row-btn-save').addEventListener('click', (e) => saveIndividualRow(e.target));
+            tr.querySelector('.row-btn-edit').addEventListener('click', (e) => editIndividualRow(e.target));
+            tr.querySelector('.row-btn-delete').addEventListener('click', (e) => deleteIndividualRow(e.target));
+
+            tableBody.appendChild(tr);
+        }
+ 
+        function toggleRowInputState(trRow, enabled) {
+            const selectElements = trRow.querySelectorAll('select');
+            const editableDivs = trRow.querySelectorAll('.table-text-editable');
+               
+            selectElements.forEach(el => el.disabled = !enabled);
+            editableDivs.forEach(el => el.setAttribute('contenteditable', enabled ? 'true' : 'false'));
+               
+            const btnSave = trRow.querySelector('.row-btn-save');
+            const btnEdit = trRow.querySelector('.row-btn-edit');
+               
+            if (enabled) {
+                btnSave.disabled = false;
+                btnEdit.disabled = true;
+            } else {
+                btnSave.disabled = false;
+                btnEdit.disabled = false;
+            }
+        }
+ 
+        function saveIndividualRow(buttonElement) {
+            const tr = buttonElement.closest('tr');
+            const title = tr.querySelector('.row-title').textContent.trim();
+            if(!title) {
+                alert('Please fill in the Program / Segment Title before saving this row entry.');
+                return;
+            }
+            toggleRowInputState(tr, false);
+        }
+ 
+        function editIndividualRow(buttonElement) {
+            const tr = buttonElement.closest('tr');
+            toggleRowInputState(tr, true);
+        }
+ 
+        function deleteIndividualRow(buttonElement) {
+            const tr = buttonElement.closest('tr');
+               
+            if(confirm("Permanently remove this row entry from current view log?")) {
+                tr.remove();
+                   
+                const remainingRows = tableBody.querySelectorAll('tr');
+                const updatedPayload = [];
+                   
+                remainingRows.forEach(row => {
+                    const titleText = row.querySelector('.row-title').textContent.trim();
+                    if(titleText) { 
+                        updatedPayload.push({
+                            hour: row.querySelector('.row-hour').value,
+                            minute: row.querySelector('.row-minute').value,
+                            ampm: row.querySelector('.row-ampm').value,
+                            title: titleText,
+                            lr: row.querySelector('.row-lr').value,
+                            producer: row.querySelector('.row-producer').textContent.trim(),
+                            netia: row.querySelector('.row-netia').value,
+                            remarks: row.querySelector('.row-remarks').textContent.trim()
+                        });
+                    }
+                });
+
+                localStorage.setItem(storageKeyPointer, JSON.stringify({
+                    metaPerson: rawPerson,
+                    metaDate: activeDate,
+                    metaInterval: activeInterval,
+                    rows: updatedPayload,
+                    updatedAt: Date.now()
+                }));
+
+                if (tableBody.children.length === 0) {
+                    createLogTableRow({}, false);
+                }
+            }
+        }
+ 
+        function initialWorkspaceLoader() {
+            const localData = localStorage.getItem(storageKeyPointer);
+
+            if (localData) {
+                const snapshot = JSON.parse(localData);
+                const datasetsParsed = snapshot.rows || [];
+                if (datasetsParsed.length > 0) {
+                    tableBody.innerHTML = '';
+                    datasetsParsed.forEach(item => {
+                        createLogTableRow(item, true);
+                    });
+                    return;
+                }
+            }
+            tableBody.innerHTML = '';
+            createLogTableRow({}, false);
+        }
+ 
+        document.getElementById('btnAddRow').addEventListener('click', () => {
+            createLogTableRow({}, false);
+        });
+ 
+        document.getElementById('btnSaveChanges').addEventListener('click', () => {
+            const completeRows = tableBody.querySelectorAll('tr');
+            const savedDatasetPayload = [];
+            let verificationAlertStatus = true;
+ 
+            completeRows.forEach(row => {
+                const btnSave = row.querySelector('.row-btn-save');
+                if (btnSave && !btnSave.disabled) { verificationAlertStatus = false; }
+ 
+                savedDatasetPayload.push({
+                    hour: row.querySelector('.row-hour').value,
+                    minute: row.querySelector('.row-minute').value,
+                    ampm: row.querySelector('.row-ampm').value,
+                    title: row.querySelector('.row-title').textContent.trim(),
+                    lr: row.querySelector('.row-lr').value,
+                    producer: row.querySelector('.row-producer').textContent.trim(),
+                    netia: row.querySelector('.row-netia').value,
+                    remarks: row.querySelector('.row-remarks').textContent.trim()
+                });
+            });
+ 
+            if(!verificationAlertStatus) {
+                const confirmChoice = confirm("Some modifications are unsaved. Would you like to commit all structural table data cells into persistent records storage logs?");
+                if(!confirmChoice) return;
+            }
+ 
+            localStorage.setItem(storageKeyPointer, JSON.stringify({
+                metaPerson: rawPerson,
+                metaDate: activeDate,
+                metaInterval: activeInterval,
+                rows: savedDatasetPayload,
+                updatedAt: Date.now()
+            }));
+            
+            // Mirror a registry sync point for the main dashboard layout counters
+            let sheetsRegistry = JSON.parse(localStorage.getItem('beats_local_sheets_registry')) || [];
+            if(!sheetsRegistry.includes(storageKeyPointer)) {
+                sheetsRegistry.push(storageKeyPointer);
+                localStorage.setItem('beats_local_sheets_registry', JSON.stringify(sheetsRegistry));
+            }
+
+            alert('Conti Sheet logs records saved successfully to storage array!');
+            initialWorkspaceLoader();
+        });
+ 
+        document.getElementById('btnPrintLog').addEventListener('click', () => { window.print(); });
+           
+        if (logoutActionLink) {
+            logoutActionLink.addEventListener('click', () => {
+                localStorage.removeItem('currentUser');
+                sessionStorage.removeItem('activeProfileName');
+            });
+        }
+
+        window.addEventListener('DOMContentLoaded', initialWorkspaceLoader);
+    </script>
+</body>
+</html>

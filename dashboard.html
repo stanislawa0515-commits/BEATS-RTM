@@ -1,0 +1,194 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>BEATS - Dashboard</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Fredoka:ital,wght@1,900&family=Kanit:ital,wght@1,900&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="style.css">
+    <style>
+        .feature-card {
+            position: relative;
+            user-select: none;
+        }
+        .card-alert-badge {
+            position: absolute;
+            top: 15px;
+            right: 15px;
+            width: 14px;
+            height: 14px;
+            background-color: #ff3366;
+            border-radius: 50%;
+            border: 2px solid #fff;
+            box-shadow: 0 0 8px rgba(255, 51, 102, 0.8);
+            display: none; 
+            pointer-events: none;
+        }
+    </style>
+</head>
+<body class="dashboard-body">
+
+    <div class="menu-header-bar">
+        <div class="left-nav-group">
+            <button class="hamburger-btn" id="openMenuToggle" aria-label="Open Menu">☰</button>
+            <div class="user-greeting">Hi, <span id="displayUsername">Guest</span></div>
+        </div>
+        <div style="font-family: 'Kanit', sans-serif; font-weight: 900; color: #dc2b5c; font-size: 1.5rem; font-style: italic;">BEATS</div>
+    </div>
+
+    <div class="overlay-screen" id="menuOverlay"></div>
+    
+    <div class="nav-sidebar" id="sidebarDrawer">
+        <button class="close-menu-btn" id="closeMenuToggle" aria-label="Close Menu">✕</button>
+        <div class="sidebar-links">
+            <a href="dashboard.html" class="sidebar-view-trigger active">Dashboard</a>
+            <a href="aboutMe.html">About Me</a>
+            <a href="SignIn.html" id="logoutActionLink" style="color: #ff4d4d; margin-top: 20px;">Logout</a>
+        </div>
+        
+        <div class="theme-toggle-row">
+            <span>Theme Mode</span>
+            <button class="theme-switch-btn" id="themeSwitchTrigger">☀️ / 🌙</button>
+        </div>
+    </div>
+
+    <main class="page-body-layout" style="position: relative; z-index: 10;">
+        <div class="dashboard-view-wrapper">
+            
+            <div class="slider-container">
+                <div class="slider-track">
+                    <img src="image1.png" alt="Studio Space 1">
+                    <img src="image2.png" alt="Recording Equipment 2">
+                    <img src="image3.png" alt="Conti Live Room 3">
+                    <img src="image4.png" alt="Office Desk 4">
+                </div>
+            </div>
+
+            <h2 class="core-functions-headline">System Core Functions</h2>
+
+            <div class="functions-grid" style="position: relative; z-index: 20;">
+                
+                <div class="feature-card" id="card-conti-log" onclick="safeNavigate('logs', 'contiLog1.html')">
+                    <span class="card-alert-badge" id="card-count-logs"></span>
+                    <span class="card-icon">📻</span>
+                    <h3>Conti Log</h3>
+                    <p>Track daily on-air activities and programme updates.</p>
+                </div>
+
+                <div class="feature-card" onclick="window.location.href='contiBook.html'">
+                    <span class="card-icon">📅</span>
+                    <h3>Conti Booking</h3>
+                    <p>Manage bookings for recordings and guest interviews.</p>
+                </div>
+
+                <div class="feature-card" onclick="window.location.href='schedule.html'">
+                    <span class="card-icon">⏱️</span>
+                    <h3>Conti Schedule</h3>
+                    <p>Segment Melayu | Iban.</p>
+                </div>
+
+                <div class="feature-card" onclick="window.location.href='material.html'">
+                    <span class="card-icon">📁</span>
+                    <h3>Material</h3>
+                    <p>Broadcast materials info.</p>
+                </div>
+
+                <div class="feature-card" id="card-equipment-report" onclick="safeNavigate('reports', 'EReport.html')">
+                    <span class="card-alert-badge" id="card-count-reports"></span>
+                    <span class="card-icon">🔧</span>
+                    <h3>E-Equipment Report</h3>
+                    <p>Report equipment issues, damage, or loss items tracking.</p>
+                </div>
+            </div>
+
+            <footer>
+                <p>© 2026 RTM Bintulu. All rights reserved.</p>
+            </footer>
+        </div>
+    </main>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', () => {
+            const openMenuToggle = document.getElementById('openMenuToggle');
+            const closeMenuToggle = document.getElementById('closeMenuToggle');
+            const sidebarDrawer = document.getElementById('sidebarDrawer');
+            const menuOverlay = document.getElementById('menuOverlay');
+            const themeSwitchTrigger = document.getElementById('themeSwitchTrigger');
+            const displayUsername = document.getElementById('displayUsername');
+            const logoutActionLink = document.getElementById('logoutActionLink');
+
+            // Set up Session Profile Fallbacks
+            const activeUser = sessionStorage.getItem('activeProfileName') || localStorage.getItem('currentUser') || 'Guest';
+            if (displayUsername) displayUsername.textContent = activeUser;
+
+            if(localStorage.getItem('theme') === 'dark') {
+                document.documentElement.setAttribute('data-theme', 'dark');
+            }
+
+            function toggleSidebar(open) {
+                if (!sidebarDrawer || !menuOverlay) return;
+                if(open) {
+                    sidebarDrawer.classList.add('open');
+                    menuOverlay.classList.add('show');
+                } else {
+                    sidebarDrawer.classList.remove('open');
+                    menuOverlay.classList.remove('show');
+                }
+            }
+
+            if (openMenuToggle) openMenuToggle.addEventListener('click', () => toggleSidebar(true));
+            if (closeMenuToggle) closeMenuToggle.addEventListener('click', () => toggleSidebar(false));
+            if (menuOverlay) menuOverlay.addEventListener('click', () => toggleSidebar(false));
+
+            if (themeSwitchTrigger) {
+                themeSwitchTrigger.addEventListener('click', () => {
+                    if(document.documentElement.hasAttribute('data-theme')) {
+                        document.documentElement.removeAttribute('data-theme');
+                        localStorage.setItem('theme', 'light');
+                    } else {
+                        document.documentElement.setAttribute('data-theme', 'dark');
+                        localStorage.setItem('theme', 'dark');
+                    }
+                });
+            }
+
+            if (logoutActionLink) {
+                logoutActionLink.addEventListener('click', () => {
+                    const savedLogsBadge = localStorage.getItem('last_seen_logs_content');
+                    const savedReportsBadge = localStorage.getItem('last_seen_reports_content');
+                    const savedTheme = localStorage.getItem('theme');
+                    
+                    localStorage.clear();
+                    sessionStorage.clear();
+                    
+                    if(savedLogsBadge) localStorage.setItem('last_seen_logs_content', savedLogsBadge);
+                    if(savedReportsBadge) localStorage.setItem('last_seen_reports_content', savedReportsBadge);
+                    if(savedTheme) localStorage.setItem('theme', savedTheme);
+                });
+            }
+
+            // Standalone safe offline alerts handling stub
+            function fetchLocalAlertSignatureStubs() {
+                const cardLogsBadge = document.getElementById('card-count-logs');
+                const cardReportsBadge = document.getElementById('card-count-reports');
+                if (cardLogsBadge) cardLogsBadge.style.display = 'none';
+                if (cardReportsBadge) cardReportsBadge.style.display = 'none';
+            }
+            fetchLocalAlertSignatureStubs();
+        });
+
+        window.safeNavigate = function(type, targetUrl) {
+            if (type === 'logs') {
+                const logsPool = localStorage.getItem('last_saved_logs_pool') || "";
+                localStorage.setItem('last_seen_logs_content', logsPool);
+            } else if (type === 'reports') {
+                const reportsPool = localStorage.getItem('last_saved_reports_pool') || "";
+                localStorage.setItem('last_seen_reports_content', reportsPool);
+            }
+            window.location.href = targetUrl;
+        };
+    </script>
+</body>
+</html>

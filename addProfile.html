@@ -1,0 +1,93 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>BEATS - Add Profile</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Fredoka:ital,wght@1,900&family=Kanit:ital,wght@1,900&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="style.css">
+    <script>
+        document.documentElement.setAttribute('data-theme', 'light');
+    </script>
+</head>
+<body>
+
+    <div class="app-container">
+        <h1 class="brand-header pulse-word">BEATS</h1>
+        
+        <div class="form-box">
+            <h2>Add Profile</h2>
+            
+            <form id="addProfileForm">
+                <div class="input-group">
+                    <label>Profile Picture :</label>
+                    <input type="file" id="profilePhoto" accept="image/*">
+                </div>
+
+                <div class="input-group">
+                    <label for="profileName">DJ Name :</label>
+                    <input type="text" id="profileName" placeholder="e.g. DJ Ruth" required>
+                </div>
+
+                <div class="input-group">
+                    <label for="profilePassword">Profile Password (Optional) :</label>
+                    <input type="password" id="profilePassword" placeholder="Leave blank for no password">
+                </div>
+
+                <button type="submit" class="btn">SAVE PROFILE</button>
+            </form>
+
+            <div class="form-links">
+                <a href="user.html" class="link-gray">Cancel</a>
+            </div>
+        </div>
+        
+        <footer>
+            <p>© 2026 RTM Bintulu. All rights reserved.</p>
+        </footer>
+    </div>
+
+    <script>
+        document.getElementById('addProfileForm').addEventListener('submit', function(e) {
+            e.preventDefault();
+            
+            const nameInput = document.getElementById('profileName').value.trim();
+            const passwordInput = document.getElementById('profilePassword').value;
+            const photoFile = document.getElementById('profilePhoto').files[0];
+
+            const saveNewProfile = (photoUrl) => {
+                let profiles = JSON.parse(localStorage.getItem('beatsProfiles')) || [];
+                
+                const duplicate = profiles.find(p => p.name.toLowerCase() === nameInput.toLowerCase());
+                if (duplicate) {
+                    alert('A profile with this DJ name already exists!');
+                    return;
+                }
+
+                profiles.push({
+                    id: 'prof_' + Date.now(), 
+                    name: nameInput,
+                    password: passwordInput ? passwordInput : null,
+                    photo: photoUrl
+                });
+
+                localStorage.setItem('beatsProfiles', JSON.stringify(profiles));
+                alert('Profile created successfully!');
+                window.location.href = 'user.html';
+            };
+
+            if (photoFile) {
+                const reader = new FileReader();
+                reader.onload = function(event) {
+                    saveNewProfile(event.target.result);
+                };
+                reader.readAsDataURL(photoFile);
+            } else {
+                saveNewProfile(null);
+            }
+        });
+    </script>
+</body>
+</html>

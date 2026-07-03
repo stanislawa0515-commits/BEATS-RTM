@@ -1,0 +1,156 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>BEATS - 3 Schedule</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Fredoka:ital,wght@1,900&family=Kanit:ital,wght@1,900&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="style.css">
+</head>
+<body class="dashboard-body">
+
+    <div class="menu-header-bar">
+        <div class="left-nav-group">
+            <button class="hamburger-btn" id="openMenuToggle" aria-label="Open Menu">☰</button>
+            <div class="user-greeting">Hi, <span id="displayUsername">Guest</span></div>
+        </div>
+        <div style="font-family: 'Kanit', sans-serif; font-weight: 900; color: #dc2b5c; font-size: 1.5rem; font-style: italic;">BEATS</div>
+    </div>
+
+    <div class="overlay-screen" id="menuOverlay"></div>
+    
+    <div class="nav-sidebar" id="sidebarDrawer">
+        <button class="close-menu-btn" id="closeMenuToggle" aria-label="Close Menu">✕</button>
+        <div class="sidebar-links">
+            <a href="dashboard.html">Dashboard</a>
+            <a href="schedule.html" class="sidebar-view-trigger active">Conti Schedule</a>
+            <a href="aboutMe.html">About Me</a>
+            <a href="SignIn.html" id="logoutActionLink" style="color: #ff4d4d; margin-top: 20px;">Logout</a>
+        </div>
+        
+        <div class="theme-toggle-row">
+            <span>Theme Mode</span>
+            <button class="theme-switch-btn" id="themeSwitchTrigger">☀️ / 🌙</button>
+        </div>
+    </div>
+
+    <main class="page-body-layout" style="position: relative; z-index: 10; display: flex; flex-direction: column; justify-content: center; min-height: calc(100vh - 80px); padding: 10px 0;">
+        <div class="dashboard-view-wrapper" style="width: 100%;">
+            
+            <!-- Headline updated -->
+            <h2 class="core-functions-headline" style="margin-top: 0px; margin-bottom: 20px;">Choose Your Conti Schedule</h2>
+
+            <!-- Grid updated to easily fit 3 cards gracefully -->
+            <div class="functions-grid" style="position: relative; z-index: 20; max-width: 1000px; margin: 0 auto; width: 100%;">
+                
+                <!-- Flash Card 1 -->
+                <div class="feature-card" onclick="window.location.href='segmenIban.html'">
+                    <div style="margin-bottom: 5px; display: flex; justify-content: center; align-items: center; gap: 10px; height: 180px; flex-wrap: wrap; padding: 10px;">
+                        <img src="WAIfm.png" alt="WAIfm Logo" style="width: 75px; height: 75px; object-fit: contain;">
+                        <img src="BINTULUfm.png" alt="BINTULUfm Logo" style="width: 75px; height: 75px; object-fit: contain;">
+                    </div>
+                    <h3>WAIfm Bintulu</h3>
+                    <p>SELASA</p>
+                </div>
+
+                <!-- Flash Card 2 -->
+                <div class="feature-card" onclick="window.location.href='segmenIban1.html'">
+                    <div style="margin-bottom: 5px; display: flex; justify-content: center; align-items: center; gap: 8px; height: 180px; flex-wrap: wrap; padding: 10px;">
+                        <img src="WAIfm.png" alt="WAIfm Logo" style="width: 50px; height: 50px; object-fit: contain;">
+                        <img src="BINTULUfm.png" alt="BINTULUfm Logo" style="width: 50px; height: 50px; object-fit: contain;">
+                        <img src="SRIAMANfm.png" alt="SRIAMANfm Logo" style="width: 50px; height: 50px; object-fit: contain;">
+                        <img src="MIRIfm.png" alt="MIRIfm Logo" style="width: 50px; height: 50px; object-fit: contain;">
+                        <img src="SIBUfm.png" alt="SIBUfm Logo" style="width: 50px; height: 50px; object-fit: contain;">
+                        <img src="LIMBANGfm.png" alt="LIMBANGfm Logo" style="width: 50px; height: 50px; object-fit: contain;">
+                    </div>
+                    <h3>Inter-Station</h3>
+                    <p>SABTU</p>
+                </div>
+
+                <!-- Flash Card 3 -->
+                <div class="feature-card" onclick="window.location.href='segmenIban2.html'">
+                    <div style="margin-bottom: 5px; display: flex; justify-content: center; align-items: center; gap: 8px; height: 180px; flex-wrap: wrap; padding: 10px;">
+                        <img src="WAIfm.png" alt="WAIfm Logo" style="width: 50px; height: 50px; object-fit: contain;">
+                        <img src="BINTULUfm.png" alt="BINTULUfm Logo" style="width: 50px; height: 50px; object-fit: contain;">
+                        <img src="SRIAMANfm.png" alt="SRIAMANfm Logo" style="width: 50px; height: 50px; object-fit: contain;">
+                        <img src="MIRIfm.png" alt="MIRIfm Logo" style="width: 50px; height: 50px; object-fit: contain;">
+                        <img src="SIBUfm.png" alt="SIBUfm Logo" style="width: 50px; height: 50px; object-fit: contain;">
+                        <img src="LIMBANGfm.png" alt="LIMBANGfm Logo" style="width: 50px; height: 50px; object-fit: contain;">
+                    </div>
+                    <h3>Inter-Station</h3>
+                    <p>AHAD</p>
+                </div>
+
+            </div>
+        </div>
+    </main>
+
+    <!-- Semantic Footer Placement -->
+    <footer style="padding: 20px 0; text-align: center; width: 100%;">
+        <p style="margin: 0; font-size: 0.9rem; opacity: 0.8;">&copy; 2026 RTM Bintulu. All rights reserved.</p>
+    </footer>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', () => {
+            const openMenuToggle = document.getElementById('openMenuToggle');
+            const closeMenuToggle = document.getElementById('closeMenuToggle');
+            const sidebarDrawer = document.getElementById('sidebarDrawer');
+            const menuOverlay = document.getElementById('menuOverlay');
+            const themeSwitchTrigger = document.getElementById('themeSwitchTrigger');
+            const displayUsername = document.getElementById('displayUsername');
+
+            const activeUser = sessionStorage.getItem('activeProfileName') || localStorage.getItem('currentUser') || 'Guest';
+            if (displayUsername) displayUsername.textContent = activeUser;
+
+            if(localStorage.getItem('theme') === 'dark') {
+                document.documentElement.setAttribute('data-theme', 'dark');
+            }
+
+            function toggleSidebar(open) {
+                if (!sidebarDrawer || !menuOverlay) return;
+                if(open) {
+                    sidebarDrawer.classList.add('open');
+                    menuOverlay.classList.add('show');
+                } else {
+                    sidebarDrawer.classList.remove('open');
+                    menuOverlay.classList.remove('show');
+                }
+            }
+
+            if (openMenuToggle) openMenuToggle.addEventListener('click', () => toggleSidebar(true));
+            if (closeMenuToggle) closeMenuToggle.addEventListener('click', () => toggleSidebar(false));
+            if (menuOverlay) menuOverlay.addEventListener('click', () => toggleSidebar(false));
+
+            if (themeSwitchTrigger) {
+                themeSwitchTrigger.addEventListener('click', () => {
+                    if(document.documentElement.hasAttribute('data-theme')) {
+                        document.documentElement.removeAttribute('data-theme');
+                        localStorage.setItem('theme', 'light');
+                    } else {
+                        document.documentElement.setAttribute('data-theme', 'dark');
+                        localStorage.setItem('theme', 'dark');
+                    }
+                });
+            }
+
+            const logoutActionLink = document.getElementById('logoutActionLink');
+            if (logoutActionLink) {
+                logoutActionLink.addEventListener('click', () => {
+                    const savedLogsBadge = localStorage.getItem('last_seen_logs_content');
+                    const savedReportsBadge = localStorage.getItem('last_seen_reports_content');
+                    const savedTheme = localStorage.getItem('theme');
+                    
+                    localStorage.clear();
+                    sessionStorage.clear();
+                    
+                    if(savedLogsBadge) localStorage.setItem('last_seen_logs_content', savedLogsBadge);
+                    if(savedReportsBadge) localStorage.setItem('last_seen_reports_content', savedReportsBadge);
+                    if(savedTheme) localStorage.setItem('theme', savedTheme);
+                });
+            }
+        });
+    </script>
+</body>
+</html>

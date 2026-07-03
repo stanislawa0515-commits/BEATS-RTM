@@ -1,0 +1,907 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>BEATS - Segmen Iban Inter-Station (SABTU)</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Fredoka:ital,wght@1,900&family=Kanit:ital,wght@1,900&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="style.css">
+    <style>
+        /* Custom layout adjustments for dynamic log table */
+        .log-container-card {
+            background: #ffffff;
+            border-radius: 12px;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.05);
+            padding: 30px;
+            max-width: 1000px;
+            margin: 20px auto;
+            width: 90%;
+            box-sizing: border-box;
+        }
+        
+        .header-logo-section {
+            text-align: center;
+            margin-bottom: 25px;
+        }
+
+        .header-logo-section img {
+            max-width: 190px;
+            height: auto;
+            object-fit: contain;
+            margin-bottom: 12px;
+        }
+
+        .header-logo-section h2 {
+            margin: 2px 0;
+            color: #000000;
+            letter-spacing: 1px;
+            font-weight: 600;
+            font-size: 1.15rem; /* Reduced slightly to look smaller under the logo */
+        }
+
+        .header-logo-section h3 {
+            margin: 0;
+            color: #000000;
+            font-weight: 600;
+            font-size: 1.0rem; /* Reduced slightly to look smaller under the logo */
+        }
+
+        .divider-line {
+            border: none;
+            height: 2px;
+            background: linear-gradient(to right, transparent, #dc2b5c, transparent);
+            margin: 25px 0;
+        }
+
+        /* Side-by-side single row alignment grid layout */
+        .metadata-grid {
+            display: grid;
+            grid-template-columns: repeat(4, 1fr);
+            gap: 20px;
+            background: rgba(0,0,0,0.02);
+            padding: 20px;
+            border-radius: 8px;
+            margin-bottom: 25px;
+        }
+
+        .meta-field {
+            display: flex;
+            flex-direction: column;
+            gap: 5px;
+        }
+
+        .meta-field label {
+            font-weight: 600;
+            font-size: 0.85rem;
+            text-transform: uppercase;
+            color: #555;
+        }
+
+        .meta-field input, .meta-field select {
+            padding: 10px;
+            border: 1px solid #ddd;
+            border-radius: 6px;
+            font-size: 0.95rem;
+            width: 100%;
+            box-sizing: border-box;
+        }
+
+        /* Top Bar Wrapper for Table Header Actions */
+        .table-action-header {
+            display: flex;
+            justify-content: flex-end;
+            margin-bottom: 12px;
+        }
+
+        /* Global Mini Toolbar Styles */
+        .global-toolbar {
+            display: flex;
+            align-items: center;
+            gap: 6px;
+            background: #f1f3f5;
+            padding: 6px;
+            border-radius: 6px;
+            border: 1px solid #ced4da;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.03);
+        }
+
+        .global-toolbar button {
+            background: #fff;
+            border: 1px solid #adb5bd;
+            border-radius: 4px;
+            padding: 4px 10px;
+            font-size: 0.85rem;
+            cursor: pointer;
+            font-weight: bold;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            transition: all 0.15s ease;
+            height: 30px;
+            box-sizing: border-box;
+        }
+
+        .global-toolbar button:hover {
+            background: #e9ecef;
+            border-color: #868e96;
+        }
+
+        #globalAlignCycler {
+            padding: 4px 8px;
+            min-width: 38px;
+        }
+
+        #globalAlignCycler svg {
+            width: 16px;
+            height: 14px;
+            display: block;
+        }
+
+        /* Dynamic Table Structure & Box Container Wrapper */
+        .table-responsive-wrapper {
+            overflow-x: auto;
+            margin-bottom: 20px;
+            border: 1px solid #ccc;
+            border-radius: 6px;
+        }
+
+        .conti-log-table {
+            width: 100%;
+            border-collapse: collapse;
+            min-width: 800px;
+        }
+
+        .conti-log-table th {
+            background-color: #f8f9fa;
+            color: #333;
+            font-weight: bold;
+            text-align: center;
+            padding: 12px;
+            border-bottom: 2px solid #dee2e6;
+            border-right: 1px solid #eee;
+        }
+
+        .conti-log-table td {
+            padding: 12px 10px;
+            border-bottom: 1px solid #eee;
+            border-right: 1px solid #eee;
+            vertical-align: middle;
+        }
+
+        .conti-log-table th:last-child, 
+        .conti-log-table td:last-child {
+            border-right: none;
+        }
+
+        .time-select-group {
+            display: flex;
+            gap: 4px;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .time-select-group select {
+            padding: 6px;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+        }
+
+        .table-input-text {
+            width: 100%;
+            padding: 8px;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+            box-sizing: border-box;
+            font-family: inherit;
+        }
+
+        /* Contenteditable Editor Box Styling */
+        div.segment-detail-input {
+            min-height: 40px;
+            background: #fff;
+            color: #000;
+            overflow-y: auto;
+            line-height: 1.4;
+            display: block;
+            word-break: break-word;
+            font-size: 14px;
+        }
+        
+        div.segment-detail-input[disabled="true"] {
+            background-color: #e9ecef;
+            cursor: not-allowed;
+        }
+
+        /* Mirror elements hidden on screen by default */
+        .print-text-mirror, .print-meta-mirror {
+            display: none;
+        }
+
+        .action-btn-cell {
+            display: flex;
+            gap: 6px;
+            justify-content: flex-start;
+        }
+
+        .btn-action {
+            padding: 6px 12px;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+            font-weight: 500;
+            font-size: 0.8rem;
+            transition: opacity 0.2s;
+        }
+
+        .btn-action:hover { opacity: 0.85; }
+        .btn-save { background-color: #28a745; color: white; }
+        .btn-edit { background-color: #ffc107; color: #212529; }
+        .btn-delete { background-color: #dc3545; color: white; }
+
+        /* Custom Styling for "Stesen Terlibat" Area */
+        .stesen-terlibat-block {
+            margin: 25px 0;
+            font-family: Arial, sans-serif;
+            font-size: 1rem;
+            color: #000000;
+            line-height: 1.6;
+        }
+
+        .stesen-title {
+            margin-bottom: 8px;
+            font-weight: normal;
+        }
+
+        .stesen-list {
+            list-style: none;
+            padding-left: 50px; /* Shift list items to the right matching Screenshot 2026-07-01 094650.png */
+            margin: 0;
+            font-style: italic; /* Elements styled in italics */
+        }
+
+        .stesen-list li {
+            margin-bottom: 2px;
+        }
+
+        .control-panel-footer {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-top: 25px;
+            flex-wrap: wrap;
+            gap: 15px;
+        }
+
+        .utility-btn {
+            padding: 10px 20px;
+            border: none;
+            border-radius: 6px;
+            font-weight: 600;
+            cursor: pointer;
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            transition: transform 0.1s;
+        }
+
+        .utility-btn:active { transform: scale(0.98); }
+        .btn-add-row { background-color: #007bff; color: white; }
+        .btn-print-doc { background-color: #6c757d; color: white; }
+        .btn-save-all { background-color: #dc2b5c; color: white; padding: 12px 28px; }
+
+        /* Dark mode compatibility modifiers */
+        [data-theme="dark"] .log-container-card { background: #1e1e1e; color: #f5f5f5; }
+        [data-theme="dark"] .table-responsive-wrapper { border-color: #444; }
+        [data-theme="dark"] .conti-log-table th { background-color: #2d2d2d; color: #fff; border-bottom-color: #444; border-right-color: #444; }
+        [data-theme="dark"] .conti-log-table td { border-bottom-color: #333; border-right-color: #333; }
+        [data-theme="dark"] .metadata-grid { background: rgba(255,255,255,0.03); }
+        [data-theme="dark"] .meta-field label { color: #aaa; }
+        [data-theme="dark"] input, [data-theme="dark"] select, [data-theme="dark"] textarea, [data-theme="dark"] div.segment-detail-input { background: #2b2b2b; color: #fff; border-color: #444; }
+        [data-theme="dark"] div.segment-detail-input[disabled="true"] { background-color: #3a3a3a; }
+        [data-theme="dark"] .header-logo-section h2 { color: #fff; }
+        [data-theme="dark"] .header-logo-section h3 { color: #fff; }
+        [data-theme="dark"] .global-toolbar { background: #2d2d2d; border-color: #444; }
+        [data-theme="dark"] .global-toolbar button { background: #3a3a3a; border-color: #555; color: #fff; }
+        [data-theme="dark"] .global-toolbar button:hover { background: #4a4a4a; }
+        [data-theme="dark"] .stesen-terlibat-block { color: #f5f5f5; }
+
+        /* Responsive Breakpoint handling for form layouts */
+        @media (max-width: 850px) {
+            .metadata-grid {
+                grid-template-columns: repeat(2, 1fr);
+            }
+        }
+        @media (max-width: 550px) {
+            .metadata-grid {
+                grid-template-columns: 1fr;
+            }
+        }
+
+        /* PRINT MEDIA STYLES */
+        @media print {
+            body *, .menu-header-bar, .nav-sidebar, .overlay-screen, .control-panel-footer, .btn-action, .utility-btn, #addNewRowTrigger, #printDocumentTrigger, #saveEntireFormTrigger, .table-action-header, .global-toolbar {
+                display: none !important;
+            }
+            body { 
+                background: #fff !important; 
+                color: #000 !important; 
+            }
+            
+            .page-body-layout, .log-container-card {
+                display: block !important;
+                width: 100% !important;
+                max-width: 100% !important;
+                margin: 0 !important;
+                padding: 0 !important;
+                box-shadow: none !important;
+                background: transparent !important;
+            }
+            .log-container-card * { 
+                display: revert !important; 
+            }
+            
+            .log-container-card .table-action-header,
+            .log-container-card .global-toolbar,
+            .log-container-card .action-btn-cell,
+            .log-container-card .btn-action {
+                display: none !important;
+            }
+            
+            /* FORCE COLUMN LAYOUT */
+            .metadata-grid {
+                background: transparent !important;
+                padding: 0 !important;
+                margin-bottom: 25px;
+                display: flex !important;
+                flex-direction: column !important;
+                gap: 4px !important;
+            }
+
+            .metadata-grid .meta-field {
+                margin-bottom: 0px;
+            }
+
+            /* Hide raw inputs during print layout */
+            .metadata-grid .meta-field:nth-child(1),
+            .metadata-grid .meta-field:nth-child(2) {
+                display: none !important;
+            }
+
+            .metadata-grid input, .metadata-grid select, .metadata-grid label {
+                display: none !important;
+            }
+
+            /* FLEX ORDER FIX */
+            .metadata-grid .meta-field:nth-child(5) {
+                order: 1 !important;
+            }
+            .metadata-grid .meta-field:nth-child(3) {
+                order: 2 !important;
+            }
+            .metadata-grid .meta-field:nth-child(4) {
+                order: 3 !important;
+            }
+
+            .print-meta-mirror {
+                display: block !important;
+                font-size: 1rem !important;
+                color: #000 !important;
+                padding: 2px 0 !important;
+                min-height: 1.2rem;
+            }
+
+            .conti-log-table th:last-child, 
+            .conti-log-table td:last-child {
+                display: none !important;
+            }
+
+            .table-responsive-wrapper {
+                overflow: visible !important;
+                width: 100% !important;
+                border: 1px solid #000 !important;
+            }
+
+            .conti-log-table {
+                min-width: 100% !important;
+                width: 100% !important;
+                table-layout: fixed !important;
+            }
+            
+            .conti-log-table th:nth-child(1), .conti-log-table td:nth-child(1) { width: 15% !important; } 
+            .conti-log-table th:nth-child(2), .conti-log-table td:nth-child(2) { width: 50% !important; } 
+            .conti-log-table th:nth-child(3), .conti-log-table td:nth-child(3) { width: 15% !important; } 
+            .conti-log-table th:nth-child(4), .conti-log-table td:nth-child(4) { width: 20% !important; } 
+
+            .table-input-text, .time-select-group select, .time-select-group span, .segment-detail-input {
+                display: none !important;
+            }
+
+            .time-select-group {
+                display: block !important;
+                text-align: center !important;
+                width: 100% !important;
+            }
+
+            .time-select-group::after {
+                content: attr(data-print-time);
+                display: inline-block;
+                font-size: 1rem;
+                color: #000;
+                text-align: center !important;
+            }
+
+            .print-text-mirror {
+                display: block !important;
+                white-space: pre-wrap !important;
+                word-break: break-all !important;
+                font-size: 1rem !important;
+                color: #000 !important;
+                padding: 4px 0 !important;
+                width: 100% !important;
+            }
+            
+            .conti-log-table th { border-bottom: 2px solid #000 !important; border-right: 1px solid #000 !important; color: #000 !important; padding: 8px 4px !important; }
+            
+            .conti-log-table td { border-bottom: 1px solid #000 !important; border-right: 1px solid #000 !important; padding: 8px 4px !important; vertical-align: middle !important; }
+            .conti-log-table td:nth-child(1) { text-align: center !important; }
+            
+            .conti-log-table th:nth-child(4), .conti-log-table td:nth-child(4) { border-right: none !important; }
+
+            /* Ensure "Stesen Terlibat" stays visible and properly formatted when printed */
+            .stesen-terlibat-block {
+                display: block !important;
+                margin-top: 20px !important;
+                color: #000000 !important;
+            }
+            .stesen-title {
+                display: block !important;
+            }
+            .stesen-list {
+                display: block !important;
+                padding-left: 50px !important;
+            }
+            .stesen-list li {
+                display: list-item !important;
+            }
+        }
+    </style>
+</head>
+<body class="dashboard-body">
+
+    <div class="menu-header-bar">
+        <div class="left-nav-group">
+            <button class="hamburger-btn" id="openMenuToggle" aria-label="Open Menu">☰</button>
+            <div class="user-greeting">Hi, <span id="displayUsername">Guest</span></div>
+        </div>
+        <div style="font-family: 'Kanit', sans-serif; font-weight: 900; color: #dc2b5c; font-size: 1.5rem; font-style: italic;">BEATS</div>
+    </div>
+
+    <div class="overlay-screen" id="menuOverlay"></div>
+    
+    <div class="nav-sidebar" id="sidebarDrawer">
+        <button class="close-menu-btn" id="closeMenuToggle" aria-label="Close Menu">✕</button>
+        <div class="sidebar-links">
+            <a href="dashboard.html">Dashboard</a>
+            <a href="aboutMe.html">About Me</a>
+            <a href="SignIn.html" id="logoutActionLink" style="color: #ff4d4d; margin-top: 20px;">Logout</a>
+        </div>
+        
+        <div class="theme-toggle-row">
+            <span>Theme Mode</span>
+            <button class="theme-switch-btn" id="themeSwitchTrigger">☀️ / 🌙</button>
+        </div>
+    </div>
+
+    <main class="page-body-layout" style="position: relative; z-index: 10; padding: 20px 0;">
+        
+        <div class="log-container-card">
+            
+            <div class="header-logo-section">
+                <img src="BINTULUfm.png" alt="BINTULUfm Logo">
+                <h2>JADUAL TUGAS KONTI</h2>
+                <h3>NGELA TENGAHARI (SABTU)/INTER-STATION</h3>
+            </div>
+
+            <hr class="divider-line">
+
+            <div class="metadata-grid">
+                <div class="meta-field">
+                    <label for="metaDate">Tarikh :</label>
+                    <input type="date" id="metaDate">
+                </div>
+                <div class="meta-field">
+                    <label for="metaDay">Hari :</label>
+                    <select id="metaDay">
+                        <option value="ISNIN">ISNIN</option>
+                        <option value="SELASA">SELASA</option>
+                        <option value="RABU">RABU</option>
+                        <option value="KHAMIS">KHAMIS</option>
+                        <option value="JUMAAT">JUMAAT</option>
+                        <option value="SABTU">SABTU</option>
+                        <option value="AHAD">AHAD</option>
+                    </select>
+                </div>
+                <div class="meta-field">
+                    <label for="metaTimeRange">Masa Konti</label>
+                    <input type="text" id="metaTimeRange" placeholder="0600 - 0700">
+                    <div class="print-meta-mirror" id="mirrorMetaTimeRange"><span style="font-weight:600;">MASA KONTI :</span> 0600 - 0700</div>
+                </div>
+                <div class="meta-field">
+                    <label for="metaPresenter">Nama Juruhebah</label>
+                    <input type="text" id="metaPresenter" placeholder="Masukkan nama juruhebah">
+                    <div class="print-meta-mirror" id="mirrorMetaPresenter"><span style="font-weight:600;">NAMA JURUHEBAH :</span> Masukkan nama juruhebah</div>
+                </div>
+                <!-- FIXED CONTAINER SLOT -->
+                <div class="meta-field" id="printCombinedDateRow">
+                    <div class="print-meta-mirror" id="mirrorCombinedDateTime" style="text-transform: uppercase;"></div>
+                </div>
+            </div>
+
+            <div class="table-action-header">
+                <div class="global-toolbar" id="globalBroadcasterToolbar">
+                    <button type="button" class="gtb-cmd" data-command="bold" title="Bold">B</button>
+                    <button type="button" class="gtb-cmd" data-command="italic" title="Italic" style="font-style: italic;">I</button>
+                    <button type="button" class="gtb-cmd" data-command="underline" title="Underline" style="text-decoration: underline;">U</button>
+                    <button type="button" id="globalAlignCycler" title="Cycle Alignment">
+                        <svg id="alignSvgContainer" viewBox="0 0 16 14" fill="none" xmlns="http://www.w3.org/2000/svg">
+                            <path d="M1 2H15M1 5H9M1 8H15M1 11H9" stroke="#333" stroke-width="2" stroke-linecap="round"/>
+                        </svg>
+                    </button>
+                </div>
+            </div>
+
+            <div class="table-responsive-wrapper">
+                <table class="conti-log-table" id="broadcastLogsTable">
+                    <thead>
+                        <tr>
+                            <th style="width: 15%;">MASA</th>
+                            <th style="width: 35%;">HEBAHAN / RANCANGAN / SEGMEN</th>
+                            <th style="width: 15%;">DURASI</th>
+                            <th style="width: 15%;">SUMBER</th>
+                            <th style="width: 20%;">ACTION</th>
+                        </tr>
+                    </thead>
+                    <tbody id="logTableBody">
+                    </tbody>
+                </table>
+            </div>
+
+            <!-- "Stesen terlibat" section matched from Screenshot 2026-07-01 094650.png -->
+            <div class="stesen-terlibat-block">
+                <div class="stesen-title">Stesen terlibat :</div>
+                <ul class="stesen-list">
+                    <li>WAIfm Kuching</li>
+                    <li>WAIfm Sri Aman</li>
+                    <li>WAIfm Sibu</li>
+                    <li>WAIfm Miri</li>
+                    <li>WAIfm Limbang</li>
+                </ul>
+            </div>
+
+            <div class="control-panel-footer">
+                <div>
+                    <button class="utility-btn btn-add-row" id="addNewRowTrigger">➕ Tambah Baris</button>
+                    <button class="utility-btn btn-print-doc" id="printDocumentTrigger">🖨️ Cetak Jadual</button>
+                </div>
+                <button class="utility-btn btn-save-all" id="saveEntireFormTrigger">💾 Simpan Semua</button>
+            </div>
+
+        </div>
+    </main>
+
+    <footer style="padding: 20px 0; text-align: center; width: 100%;">
+        <p style="margin: 0; font-size: 0.9rem; opacity: 0.8;">&copy; 2026 RTM Bintulu. All rights reserved.</p>
+    </footer>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', () => {
+            const openMenuToggle = document.getElementById('openMenuToggle');
+            const closeMenuToggle = document.getElementById('closeMenuToggle');
+            const sidebarDrawer = document.getElementById('sidebarDrawer');
+            const menuOverlay = document.getElementById('menuOverlay');
+            const themeSwitchTrigger = document.getElementById('themeSwitchTrigger');
+            const displayUsername = document.getElementById('displayUsername');
+            
+            const logTableBody = document.getElementById('logTableBody');
+            const addNewRowTrigger = document.getElementById('addNewRowTrigger');
+            const printDocumentTrigger = document.getElementById('printDocumentTrigger');
+            const saveEntireFormTrigger = document.getElementById('saveEntireFormTrigger');
+
+            const metaDate = document.getElementById('metaDate');
+            const metaDay = document.getElementById('metaDay');
+            const metaTimeRange = document.getElementById('metaTimeRange');
+            const metaPresenter = document.getElementById('metaPresenter');
+            
+            const mirrorCombinedDateTime = document.getElementById('mirrorCombinedDateTime');
+            const mirrorMetaTimeRange = document.getElementById('mirrorMetaTimeRange');
+            const mirrorMetaPresenter = document.getElementById('mirrorMetaPresenter');
+
+            const alignCycler = document.getElementById('globalAlignCycler');
+            const alignSvgContainer = document.getElementById('alignSvgContainer');
+
+            const alignmentIcons = {
+                left: `<path d="M1 2H15M1 5H9M1 8H15M1 11H9" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>`,
+                center: `<path d="M1 2H15M3 5H13M1 8H15M3 11H13" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>`,
+                right: `<path d="M1 2H15M7 5H15M1 8H15M7 11H15" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>`,
+                justify: `<path d="M1 2H15M1 5H15M1 8H15M1 11H15" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>`
+            };
+
+            let activeFocusElement = null;
+
+            const today = new Date();
+            const yyyy = today.getFullYear();
+            const mm = String(today.getMonth() + 1).padStart(2, '0');
+            const dd = String(today.getDate()).padStart(2, '0');
+            metaDate.value = `${yyyy}-${mm}-${dd}`;
+
+            const dayNamesMapping = ['AHAD', 'ISNIN', 'SELASA', 'RABU', 'KHAMIS', 'JUMAAT', 'SABTU'];
+            if(metaDay) {
+                metaDay.value = dayNamesMapping[today.getDay()];
+            }
+
+            const activeUser = sessionStorage.getItem('activeProfileName') || localStorage.getItem('currentUser') || 'Guest';
+            if (displayUsername) displayUsername.textContent = activeUser;
+
+            if(localStorage.getItem('theme') === 'dark') {
+                document.documentElement.setAttribute('data-theme', 'dark');
+            }
+
+            function toggleSidebar(open) {
+                if (!sidebarDrawer || !menuOverlay) return;
+                if(open) {
+                    sidebarDrawer.classList.add('open');
+                    menuOverlay.classList.add('show');
+                } else {
+                    sidebarDrawer.classList.remove('open');
+                    menuOverlay.classList.remove('show');
+                }
+            }
+
+            if (openMenuToggle) openMenuToggle.addEventListener('click', () => toggleSidebar(true));
+            if (closeMenuToggle) closeMenuToggle.addEventListener('click', () => toggleSidebar(false));
+            if (menuOverlay) menuOverlay.addEventListener('click', () => toggleSidebar(false));
+
+            if (themeSwitchTrigger) {
+                themeSwitchTrigger.addEventListener('click', () => {
+                    if(document.documentElement.hasAttribute('data-theme')) {
+                        document.documentElement.removeAttribute('data-theme');
+                        localStorage.setItem('theme', 'light');
+                    } else {
+                        document.documentElement.setAttribute('data-theme', 'dark');
+                        localStorage.setItem('theme', 'dark');
+                    }
+                });
+            }
+
+            function createTimeSelectorHTML() {
+                let hoursHTML = '<select class="hour-picker">';
+                for(let h=0; h<24; h++) {
+                    let padH = String(h).padStart(2, '0');
+                    hoursHTML += `<option value="${padH}">${padH}</option>`;
+                }
+                hoursHTML += '</select>';
+
+                let minsHTML = '<select class="minute-picker">';
+                for(let m=0; m<60; m++) {
+                    let padM = String(m).padStart(2, '0');
+                    minsHTML += `<option value="${padM}">${padM}</option>`;
+                }
+                minsHTML += '</select>';
+
+                return `<div class="time-select-group" data-print-time="00:00">${hoursHTML}<span>:</span>${minsHTML}</div>`;
+            }
+
+            function formatPrintDateNumeric(dateString) {
+                if(!dateString) return "";
+                const parts = dateString.split('-');
+                if(parts.length !== 3) return dateString;
+                return `${parts[2]}/${parts[1]}/${parts[0]}`;
+            }
+
+            document.querySelectorAll('.gtb-cmd').forEach(btn => {
+                btn.addEventListener('mousedown', (e) => {
+                    e.preventDefault(); 
+                    if (!activeFocusElement) return;
+
+                    const cmd = btn.getAttribute('data-command');
+                    const isContentEditable = activeFocusElement.classList.contains('segment-detail-input');
+
+                    if (isContentEditable) {
+                        activeFocusElement.focus();
+                        document.execCommand(cmd, false, null);
+                    } else {
+                        if (cmd === 'bold') {
+                            activeFocusElement.style.fontWeight = activeFocusElement.style.fontWeight === 'bold' ? 'normal' : 'bold';
+                        }
+                        if (cmd === 'italic') {
+                            activeFocusElement.style.fontStyle = activeFocusElement.style.fontStyle === 'italic' ? 'normal' : 'italic';
+                        }
+                        if (cmd === 'underline') {
+                            activeFocusElement.style.textDecoration = activeFocusElement.style.textDecoration === 'underline' ? 'none' : 'underline';
+                        }
+                        
+                        const mirror = activeFocusElement.closest('td').querySelector('.print-text-mirror');
+                        if (mirror) {
+                            mirror.style.fontWeight = activeFocusElement.style.fontWeight;
+                            mirror.style.fontStyle = activeFocusElement.style.fontStyle;
+                            mirror.style.textDecoration = activeFocusElement.style.textDecoration;
+                        }
+                    }
+
+                    const mirror = activeFocusElement.closest('td').querySelector('.print-text-mirror');
+                    if (mirror) {
+                        if (isContentEditable) mirror.innerHTML = activeFocusElement.innerHTML || "";
+                        else mirror.textContent = activeFocusElement.value || "";
+                    }
+                });
+            });
+
+            if (alignCycler) {
+                alignCycler.addEventListener('mousedown', (e) => {
+                    e.preventDefault();
+                    if (!activeFocusElement) return;
+
+                    const isContentEditable = activeFocusElement.classList.contains('segment-detail-input');
+                    let currentAlign = activeFocusElement.style.textAlign || 'left';
+                    if (currentAlign === 'start') currentAlign = 'left';
+
+                    let nextAlign = 'left';
+                    if (currentAlign === 'left') nextAlign = 'center';
+                    else if (currentAlign === 'center') nextAlign = 'right';
+                    else if (currentAlign === 'right') nextAlign = 'justify';
+
+                    alignSvgContainer.innerHTML = alignmentIcons[nextAlign];
+
+                    if (isContentEditable) {
+                        activeFocusElement.focus();
+                        let commandExec = 'justifyLeft';
+                        if (nextAlign === 'center') commandExec = 'justifyCenter';
+                        if (nextAlign === 'right') commandExec = 'justifyRight';
+                        if (nextAlign === 'justify') commandExec = 'justifyFull';
+                        document.execCommand(commandExec, false, null);
+                    } else {
+                        activeFocusElement.style.textAlign = nextAlign;
+                        const mirror = activeFocusElement.closest('td').querySelector('.print-text-mirror');
+                        if (mirror) mirror.style.textAlign = nextAlign;
+                    }
+
+                    const mirror = activeFocusElement.closest('td').querySelector('.print-text-mirror');
+                    if (mirror) {
+                        if (isContentEditable) mirror.innerHTML = activeFocusElement.innerHTML || "";
+                        else mirror.textContent = activeFocusElement.value || "";
+                    }
+                });
+            }
+
+            function appendLogTableRow() {
+                const tr = document.createElement('tr');
+                tr.innerHTML = `
+                    <td>${createTimeSelectorHTML()}</td>
+                    <td>
+                        <div contenteditable="true" class="table-input-text segment-detail-input"></div>
+                        <div class="print-text-mirror"></div>
+                    </td>
+                    <td>
+                        <input type="text" class="table-input-text duration-input">
+                        <div class="print-text-mirror"></div>
+                    </td>
+                    <td>
+                        <input type="text" class="table-input-text source-input">
+                        <div class="print-text-mirror"></div>
+                    </td>
+                    <td>
+                        <div class="action-btn-cell">
+                            <button class="btn-action btn-save row-save-btn">Save</button>
+                            <button class="btn-action btn-edit row-edit-btn">Edit</button>
+                            <button class="btn-action btn-delete row-del-btn">Delete</button>
+                        </div>
+                    </td>
+                `;
+                
+                const saveBtn = tr.querySelector('.row-save-btn');
+                const editBtn = tr.querySelector('.row-edit-btn');
+                const delBtn = tr.querySelector('.row-del-btn');
+                const editableDiv = tr.querySelector('.segment-detail-input');
+                const durationInput = tr.querySelector('.duration-input');
+                const sourceInput = tr.querySelector('.source-input');
+                const inputs = tr.querySelectorAll('input, select');
+                const timeGroup = tr.querySelector('.time-select-group');
+
+                [editableDiv, durationInput, sourceInput].forEach(elem => {
+                    elem.addEventListener('focus', () => {
+                        activeFocusElement = elem;
+                        let currentTextAlign = elem.style.textAlign || 'left';
+                        if (currentTextAlign === 'start') currentTextAlign = 'left';
+                        alignSvgContainer.innerHTML = alignmentIcons[currentTextAlign];
+                    });
+                });
+
+                editableDiv.addEventListener('input', () => {
+                    const mirror = tr.querySelector('td:nth-child(2) .print-text-mirror');
+                    if(mirror) mirror.innerHTML = editableDiv.innerHTML || "";
+                });
+
+                durationInput.addEventListener('input', () => {
+                    const mirror = tr.querySelector('td:nth-child(3) .print-text-mirror');
+                    if(mirror) mirror.textContent = durationInput.value || "";
+                });
+
+                sourceInput.addEventListener('input', () => {
+                    const mirror = tr.querySelector('td:nth-child(4) .print-text-mirror');
+                    if(mirror) mirror.textContent = sourceInput.value || "";
+                });
+
+                function syncTimeAttribute() {
+                    const hr = timeGroup.querySelector('.hour-picker').value;
+                    const min = timeGroup.querySelector('.minute-picker').value;
+                    timeGroup.setAttribute('data-print-time', `${hr}:${min}`);
+                }
+
+                timeGroup.querySelectorAll('select').forEach(select => {
+                    select.addEventListener('change', syncTimeAttribute);
+                });
+                
+                syncTimeAttribute();
+
+                delBtn.addEventListener('click', () => {
+                    if (activeFocusElement && tr.contains(activeFocusElement)) {
+                        activeFocusElement = null;
+                    }
+                    tr.remove();
+                });
+                
+                saveBtn.addEventListener('click', () => {
+                    inputs.forEach(input => input.disabled = true);
+                    editableDiv.setAttribute('contenteditable', 'false');
+                    editableDiv.setAttribute('disabled', 'true');
+                    alert('Baris dikunci secara lokal! Sila klik "Simpan Semua" di penghujung tugasan untuk sandaran pangkalan data penuh.');
+                });
+
+                editBtn.addEventListener('click', () => {
+                    inputs.forEach(input => input.disabled = false);
+                    editableDiv.setAttribute('contenteditable', 'true');
+                    editableDiv.removeAttribute('disabled');
+                });
+
+                logTableBody.appendChild(tr);
+            }
+
+            for (let i = 0; i < 1; i++) {
+                appendLogTableRow();
+            }
+
+            addNewRowTrigger.addEventListener('click', appendLogTableRow);
+            printDocumentTrigger.addEventListener('click', () => {
+                const formattedDate = formatPrintDateNumeric(metaDate.value);
+                const chosenDay = metaDay.value;
+                mirrorCombinedDateTime.innerHTML = `<span style="font-weight:600;">TARIKH/HARI :</span> ${formattedDate} ( ${chosenDay} )`;
+
+                mirrorMetaTimeRange.innerHTML = `<span style="font-weight:600;">MASA KONTI :</span> ${metaTimeRange.value || metaTimeRange.placeholder}`;
+                mirrorMetaPresenter.innerHTML = `<span style="font-weight:600;">NAMA JURUHEBAH :</span> ${metaPresenter.value || metaPresenter.placeholder}`;
+
+                document.querySelectorAll('#logTableBody tr').forEach(tr => {
+                    tr.querySelectorAll('td').forEach((td, index) => {
+                        const mirror = td.querySelector('.print-text-mirror');
+                        if(mirror) {
+                            if(index === 1) {
+                                const ed = td.querySelector('.segment-detail-input');
+                                mirror.innerHTML = ed.innerHTML || "";
+                            } else if (index === 2 || index === 3) {
+                                const field = td.querySelector('input');
+                                if(field) mirror.textContent = field.value || "";
+                            }
+                        }
+                    });
+                });
+                window.print();
+            });
+            
+            saveEntireFormTrigger.addEventListener('click', () => {
+                alert('Semua data kemasukan Jadual Tugas Konti WAIFM Bintulu berjaya disimpan ke storan sistem.');
+            });
+        });
+    </script>
+</body>
+</html>

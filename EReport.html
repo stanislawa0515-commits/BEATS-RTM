@@ -1,0 +1,350 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>BEATS - E-Equipment Report</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Fredoka:ital,wght@1,900&family=Kanit:ital,wght@1,900&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="style.css">
+    <style>
+        .form-box input, 
+        .form-box select, 
+        .form-box textarea,
+        .form-box label,
+        .checkbox-container span {
+            font-family: 'Fredoka', sans-serif !important;
+        }
+        
+        .form-box h2 {
+            font-family: 'Kanit', sans-serif !important;
+            font-style: italic;
+        }
+        .checkbox-group-row {
+            display: flex; align-items: center; gap: 24px; margin-top: 8px; margin-bottom: 4px;
+        }
+        .checkbox-container {
+            display: flex; align-items: center; gap: 8px; cursor: pointer; font-size: 1rem; font-weight: bold;
+        }
+        .checkbox-container input[type="checkbox"] {
+            width: 20px; height: 20px; cursor: pointer; accent-color: var(--brand-cyan);
+        }
+        .file-upload-wrapper {
+            display: flex; flex-direction: column; gap: 8px; margin-bottom: 18px;
+        }
+        .file-upload-btn-label {
+            display: inline-block; width: fit-content; background-color: var(--bg-input); color: var(--text-primary); border: 2px dashed var(--stroke-dark); padding: 10px 20px; border-radius: 8px; font-weight: bold; cursor: pointer; transition: background-color 0.2s, transform 0.1s; text-align: center;
+        }
+        .file-upload-btn-label:hover { background-color: var(--border-color); }
+        .file-upload-wrapper input[type="file"] { display: none; }
+        .file-name-span { font-size: 0.85rem; color: var(--brand-cyan); font-weight: bold; word-break: break-all; }
+        .history-deck-container { margin-top: 25px; border-top: 2px dashed var(--border-color); padding-top: 20px; width: 100%; }
+        .admin-reply-bubble { background-color: var(--bg-container); border: 2px solid var(--stroke-dark); border-radius: 8px; padding: 12px; margin-top: 8px; font-size: 0.9rem; }
+        .reply-text-wrapper { margin-top: 8px; padding: 8px 12px; background-color: var(--bg-input); border-left: 4px solid var(--brand-cyan); border-radius: 4px; font-style: italic; color: var(--text-primary); }
+        .report-preview-img { width: 80px; height: 80px; object-fit: cover; border-radius: 6px; border: 2px solid var(--stroke-dark); margin-top: 8px; display: block; }
+        .menu-header-bar { display: flex !important; justify-content: space-between !important; align-items: center !important; padding: 12px 20px !important; background-color: var(--bg-container, #ffffff) !important; border-bottom: 2px solid var(--border-color, #e0e0e0) !important; }
+        .left-nav-group { display: flex !important; align-items: center !important; gap: 16px !important; }
+        .hamburger-btn { background: none !important; border: none !important; font-size: 1.8rem !important; cursor: pointer !important; color: var(--text-primary, #000000) !important; padding: 4px 10px !important; border-radius: 4px !important; display: inline-block !important; pointer-events: auto !important; z-index: 10100 !important; }
+        .overlay-screen { position: fixed !important; top: 0 !important; left: 0 !important; width: 100vw !important; height: 100vh !important; background-color: rgba(0, 0, 0, 0.5) !important; z-index: 9999 !important; opacity: 0 !important; visibility: hidden !important; transition: opacity 0.3s ease, visibility 0.3s ease !important; pointer-events: none !important; }
+        .overlay-screen.show { visibility: visible !important; opacity: 1 !important; pointer-events: auto !important; }
+        .nav-sidebar { position: fixed !important; top: 0 !important; left: -300px !important; width: 280px !important; height: 100vh !important; background-color: var(--bg-container, #ffffff) !important; box-shadow: 4px 0 15px rgba(0,0,0,0.2) !important; z-index: 10000 !important; transition: left 0.3s ease !important; padding: 24px !important; display: flex !important; flex-direction: column !important; box-sizing: border-box !important; pointer-events: auto !important; }
+        .nav-sidebar.open { left: 0 !important; }
+        .close-menu-btn { align-self: flex-end !important; background: none !important; border: none !important; font-size: 1.5rem !important; cursor: pointer !important; color: var(--text-primary, #000000) !important; margin-bottom: 30px !important; display: block !important; pointer-events: auto !important; }
+        .sidebar-links { display: flex !important; flex-direction: column !important; gap: 20px !important; }
+        .sidebar-links a { text-decoration: none !important; font-size: 1.15rem !important; color: var(--text-primary, #333333) !important; font-family: 'Fredoka', sans-serif !important; font-weight: bold !important; transition: color 0.2s !important; display: block !important; }
+        .sidebar-links a:hover, .sidebar-links a.active { color: #dc2b5c !important; }
+        .theme-toggle-row { margin-top: auto; display: flex; justify-content: space-between; align-items: center; padding-top: 20px; font-family: 'Fredoka', sans-serif; font-weight: bold; }
+        .theme-switch-btn { background-color: transparent; border: 2px solid #dcdbe3; padding: 6px 16px; border-radius: 20px; cursor: pointer; font-weight: bold; display: flex; align-items: center; justify-content: center; }
+    </style>
+</head>
+<body class="page-body-layout">
+
+    <div class="menu-header-bar">
+        <div class="left-nav-group">
+            <button class="hamburger-btn" id="openMenuToggle" type="button">☰</button>
+            <div class="user-greeting" style="font-family: 'Fredoka', sans-serif; font-weight: bold;">Hi, <span id="displayUsername">Guest</span></div>
+        </div>
+        <div style="font-family: 'Kanit', sans-serif; font-weight: 900; color: #dc2b5c; font-size: 1.5rem; font-style: italic;">BEATS</div>
+    </div>
+
+    <div class="overlay-screen" id="menuOverlay"></div>
+    <div class="nav-sidebar" id="sidebarDrawer">
+        <button class="close-menu-btn" id="closeMenuToggle" type="button">✕</button>
+        <div class="sidebar-links">
+            <a href="dashboard.html">Dashboard</a>
+            <a href="AboutMe.html">About me</a>
+            <a href="SignIn.html" id="logoutActionLink" style="color: #ff4d4d; margin-top: 20px;">Logout</a>
+        </div>
+        <div class="theme-toggle-row">
+            <span>Theme Mode</span>
+            <button class="theme-switch-btn" id="themeSwitchTrigger" type="button">☀️ / 🌙</button>
+        </div>
+    </div>
+
+    <div class="app-container" style="max-width: 550px; margin: 20px auto; padding: 0 15px;">
+        <div class="form-box">
+            <h2>E-Equipment Report</h2>
+            
+            <form id="eEquipmentReportForm">
+                <h3 style="font-family: 'Kanit', sans-serif; font-style: italic; font-size: 1.2rem; color: var(--brand-magenta); margin-bottom: 12px; border-bottom: 2px dashed var(--border-color); padding-bottom: 4px; text-transform: uppercase;">Reporter Information</h3>
+                
+                <div class="input-group">
+                    <label for="reporterName">Name of Reporter :</label>
+                    <input type="text" id="reporterName" placeholder="Enter your full name" required>
+                </div>
+
+                <div class="input-group">
+                    <label for="reporterDepartment">Department :</label>
+                    <input type="text" id="reporterDepartment" placeholder="Enter department name" required>
+                </div>
+
+                <div class="input-group">
+                    <label for="reportDate">Date :</label>
+                    <input type="date" id="reportDate" required>
+                </div>
+
+                <div class="input-group">
+                    <label for="reportTime">Time :</label>
+                    <input type="text" id="reportTime" readonly style="background-color: var(--border-color); cursor: not-allowed; font-weight: bold;">
+                </div>
+
+                <h3 style="font-family: 'Kanit', sans-serif; font-style: italic; font-size: 1.2rem; color: var(--brand-magenta); margin-top: 24px; margin-bottom: 12px; border-bottom: 2px dashed var(--border-color); padding-bottom: 4px; text-transform: uppercase;">Equipment Details</h3>
+
+                <div class="input-group">
+                    <label for="equipmentType">Equipment Type :</label>
+                    <input type="text" id="equipmentType" placeholder="e.g., Audio Mixer, Microphone" required>
+                </div>
+
+                <div class="input-group">
+                    <label for="equipmentModel">Equipment Name / Model :</label>
+                    <input type="text" id="equipmentModel" placeholder="e.g., Shure SM58" required>
+                </div>
+
+                <div class="input-group">
+                    <label for="serialNumber">Serial Number / Asset Tag :</label>
+                    <input type="text" id="serialNumber" placeholder="Enter asset tag code" required>
+                </div>
+
+                <h3 style="font-family: 'Kanit', sans-serif; font-style: italic; font-size: 1.2rem; color: var(--brand-magenta); margin-top: 24px; margin-bottom: 12px; border-bottom: 2px dashed var(--border-color); padding-bottom: 4px; text-transform: uppercase;">Issue Description</h3>
+
+                <div class="input-group">
+                    <label>Reporting Type :</label>
+                    <div class="checkbox-group-row">
+                        <label class="checkbox-container">
+                            <input type="checkbox" id="typeDamage" class="report-type-checkbox" value="Damage">
+                            <span>Damage</span>
+                        </label>
+                        <label class="checkbox-container">
+                            <input type="checkbox" id="typeLoss" class="report-type-checkbox" value="Loss">
+                            <span>Loss</span>
+                        </label>
+                    </div>
+                </div>
+
+                <div class="input-group">
+                    <label for="detailedDescription">Detailed Description :</label>
+                    <textarea id="detailedDescription" rows="5" placeholder="Provide complete structural mapping observations regarding the hardware failure or missing conditions..." required></textarea>
+                </div>
+
+                <div class="file-upload-wrapper">
+                    <label>Attachment Photo :</label>
+                    <label for="fileUploadInput" class="file-upload-btn-label">File upload</label>
+                    <input type="file" id="fileUploadInput" accept="image/*">
+                    <span class="file-name-span" id="fileNameDisplay">No asset photo attached</span>
+                </div>
+
+                <button type="submit" class="btn" style="margin-top: 15px;">Submit Report</button>
+            </form>
+
+            <div class="history-deck-container">
+                <div class="widget-title" style="color: var(--brand-cyan); font-family: 'Fredoka', sans-serif; font-weight: bold;">My Reports Feedback History</div>
+                <div id="userReportsFeedbackDeck"></div>
+            </div>
+        </div>
+
+        <footer>
+            <p>© 2026 RTM Bintulu. All rights reserved.</p>
+        </footer>
+    </div>
+
+    <script>
+        const reportDateInput = document.getElementById('reportDate');
+        const reportTimeInput = document.getElementById('reportTime');
+        const fileUploadInput = document.getElementById('fileUploadInput');
+        const fileNameDisplay = document.getElementById('fileNameDisplay');
+        const typeDamageCheckbox = document.getElementById('typeDamage');
+        const typeLossCheckbox = document.getElementById('typeLoss');
+        const eEquipmentReportForm = document.getElementById('eEquipmentReportForm');
+        const userReportsFeedbackDeck = document.getElementById('userReportsFeedbackDeck');
+        let base64ImageString = ""; 
+
+        const currentActiveIdentity = sessionStorage.getItem('activeProfileName') || localStorage.getItem('currentUser') || 'Guest';
+
+        document.addEventListener("DOMContentLoaded", function() {
+            const openMenuToggle = document.getElementById('openMenuToggle');
+            const closeMenuToggle = document.getElementById('closeMenuToggle');
+            const sidebarDrawer = document.getElementById('sidebarDrawer');
+            const menuOverlay = document.getElementById('menuOverlay');
+            const themeSwitchTrigger = document.getElementById('themeSwitchTrigger');
+            const displayUsername = document.getElementById('displayUsername');
+            const logoutActionLink = document.getElementById('logoutActionLink');
+
+            if (displayUsername) displayUsername.textContent = currentActiveIdentity;
+
+            if(localStorage.getItem('theme') === 'dark') { 
+                document.documentElement.setAttribute('data-theme', 'dark'); 
+            }
+
+            function toggleSidebar(open) {
+                if(open) { 
+                    sidebarDrawer.classList.add('open'); 
+                    menuOverlay.classList.add('show'); 
+                } else { 
+                    sidebarDrawer.classList.remove('open'); 
+                    menuOverlay.classList.remove('show'); 
+                }
+            }
+            
+            if(openMenuToggle) openMenuToggle.addEventListener('click', (e) => { e.preventDefault(); toggleSidebar(true); });
+            if(closeMenuToggle) closeMenuToggle.addEventListener('click', (e) => { e.preventDefault(); toggleSidebar(false); });
+            if(menuOverlay) menuOverlay.addEventListener('click', () => toggleSidebar(false));
+
+            if(themeSwitchTrigger) themeSwitchTrigger.addEventListener('click', () => {
+                if(document.documentElement.hasAttribute('data-theme')) {
+                    document.documentElement.removeAttribute('data-theme');
+                    localStorage.setItem('theme', 'light');
+                } else {
+                    document.documentElement.setAttribute('data-theme', 'dark');
+                    localStorage.setItem('theme', 'dark');
+                }
+            });
+
+            if(logoutActionLink) logoutActionLink.addEventListener('click', () => {
+                const savedLogsBadge = localStorage.getItem('last_seen_logs_content');
+                const savedReportsBadge = localStorage.getItem('last_seen_reports_content');
+                const savedTheme = localStorage.getItem('theme');
+                localStorage.clear();
+                if(savedLogsBadge) localStorage.setItem('last_seen_logs_content', savedLogsBadge);
+                if(savedReportsBadge) localStorage.setItem('last_seen_reports_content', savedReportsBadge);
+                if(savedTheme) localStorage.setItem('theme', savedTheme);
+            });
+
+            configureRealtimeClockParameters();
+            refreshFeedbackDeckDisplay();
+        });
+
+        function configureRealtimeClockParameters() {
+            const dateInstance = new Date();
+            if(reportDateInput) reportDateInput.value = dateInstance.toISOString().split('T')[0];
+
+            let clockHoursRaw = dateInstance.getHours();
+            let clockMinutesRaw = dateInstance.getMinutes();
+            const periodIndicatorAMPM = clockHoursRaw >= 12 ? 'p.m' : 'a.m';
+
+            clockHoursRaw = clockHoursRaw % 12;
+            clockHoursRaw = clockHoursRaw ? clockHoursRaw : 12; 
+            const stringHoursNormalized = clockHoursRaw < 10 ? '0' + clockHoursRaw : clockHoursRaw;
+            const stringMinutesNormalized = clockMinutesRaw < 10 ? '0' + clockMinutesRaw : clockMinutesRaw;
+
+            if(reportTimeInput) reportTimeInput.value = `${stringHoursNormalized}:${stringMinutesNormalized} ${periodIndicatorAMPM}`;
+        }
+
+        if(typeDamageCheckbox) typeDamageCheckbox.addEventListener('change', () => {
+            if(typeDamageCheckbox.checked) typeLossCheckbox.checked = false;
+        });
+
+        if(typeLossCheckbox) typeLossCheckbox.addEventListener('change', () => {
+            if(typeLossCheckbox.checked) typeDamageCheckbox.checked = false;
+        });
+
+        if(fileUploadInput) fileUploadInput.addEventListener('change', (e) => {
+            if(e.target.files.length > 0) {
+                const targetFile = e.target.files[0];
+                fileNameDisplay.textContent = `📎 Attached: ${targetFile.name}`;
+                const reader = new FileReader();
+                reader.onload = function(event) { base64ImageString = event.target.result; };
+                reader.readAsDataURL(targetFile);
+            } else {
+                fileNameDisplay.textContent = "No asset photo attached";
+                base64ImageString = "";
+            }
+        });
+
+        eEquipmentReportForm.addEventListener('submit', function(event) {
+            event.preventDefault();
+
+            if(!typeDamageCheckbox.checked && !typeLossCheckbox.checked) {
+                alert("Validation Failure: Please flag the appropriate option within the Reporting Type section (Damage / Loss).");
+                return;
+            }
+
+            const chosenReportType = typeDamageCheckbox.checked ? 'Damage' : 'Loss';
+            const generatedId = 'REP_' + Date.now() + '_' + Math.floor(Math.random() * 1000);
+
+            let reportsPool = JSON.parse(localStorage.getItem('beats_local_reports')) || [];
+
+            reportsPool.push({
+                id: generatedId,
+                reporter: document.getElementById('reporterName').value.trim(),
+                department: document.getElementById('reporterDepartment').value.trim(),
+                date: reportDateInput.value,
+                time: reportTimeInput.value,
+                eqType: document.getElementById('equipmentType').value.trim(),
+                eqModel: document.getElementById('equipmentModel').value.trim(),
+                serialNo: document.getElementById('serialNumber').value.trim(),
+                issueType: chosenReportType,
+                description: document.getElementById('detailedDescription').value.trim(),
+                submittedBy: currentActiveIdentity,
+                adminResponse: "",
+                imageAttachment: base64ImageString 
+            });
+
+            localStorage.setItem('beats_local_reports', JSON.stringify(reportsPool));
+
+            alert(`Success! E-Equipment report asset entry submitted successfully. Identifier: ${generatedId}`);
+            eEquipmentReportForm.reset();
+            base64ImageString = ""; 
+            configureRealtimeClockParameters();
+            fileNameDisplay.textContent = "No asset photo attached";
+            refreshFeedbackDeckDisplay();
+        });
+
+        function refreshFeedbackDeckDisplay() {
+            if(!userReportsFeedbackDeck) return;
+            userReportsFeedbackDeck.innerHTML = '';
+            
+            const reportsPool = JSON.parse(localStorage.getItem('beats_local_reports')) || [];
+            const userReports = reportsPool.filter(item => item.submittedBy === currentActiveIdentity);
+
+            if(userReports.length === 0) {
+                userReportsFeedbackDeck.innerHTML = `<p style="font-size:0.85rem; color:var(--text-secondary); text-align:center; padding:10px;">No filed reports located for this account.</p>`;
+                return;
+            }
+
+            let reportsSignatureBuilder = "";
+            userReports.forEach((item) => {
+                const bubble = document.createElement('div');
+                bubble.className = "admin-reply-bubble";
+                const statusBadgeClass = item.adminResponse ? 'status-replied' : 'status-pending';
+                const statusText = item.adminResponse ? 'Replied' : 'Pending';
+                let responseSectionHTML = `<div class="reply-text-wrapper" style="color: var(--text-secondary);">⏳ Awaiting feedback reply instructions...</div>`;
+                
+                if(item.adminResponse) {
+                    responseSectionHTML = `<div style="margin-top:10px; font-weight:bold; color:var(--brand-magenta);">💬 Admin Official Reply:</div><div class="reply-text-wrapper">${item.adminResponse}</div>`;
+                    reportsSignatureBuilder += `${item.id}_${item.adminResponse.trim()}|`;
+                }
+                let imageThumbnailHTML = item.imageAttachment ? `<br><img src="${item.imageAttachment}" class="report-preview-img" alt="Thumbnail">` : "";
+                
+                bubble.innerHTML = `
+                    <div style="display:flex; justify-content:space-between; align-items:center;"><strong>${item.eqModel}</strong><span class="status-badge ${statusBadgeClass}">${statusText}</span></div>
+                    <div style="font-size:0.8rem; color:var(--text-secondary); margin-top:2px;">Tag: ${item.serialNo} | Type: ${item.issueType} | Filed: ${item.date}</div>
+                    <div style="font-size:0.85rem; margin-top:6px; color: var(--text-primary);"><strong>Issue Detail:</strong> ${item.description}</div>
+                    ${imageThumbnailHTML}${responseSectionHTML}`;
+                userReportsFeedbackDeck.appendChild(bubble);
+            });
+            if(reportsSignatureBuilder !== "") localStorage.setItem('last_seen_reports_content', reportsSignatureBuilder);
+        }
+    </script>
+</body>
+</html>
