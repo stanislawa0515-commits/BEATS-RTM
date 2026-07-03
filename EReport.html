@@ -168,7 +168,9 @@
         </footer>
     </div>
 
-    <script>
+    <script type="module">
+        import { db, collection, doc, setDoc, getDocs, query, where } from "./firebase-config.js";
+
         const reportDateInput = document.getElementById('reportDate');
         const reportTimeInput = document.getElementById('reportTime');
         const fileUploadInput = document.getElementById('fileUploadInput');
@@ -271,7 +273,7 @@
             }
         });
 
-        eEquipmentReportForm.addEventListener('submit', function(event) {
+        eEquipmentReportForm.addEventListener('submit', async function(event) {
             event.preventDefault();
 
             if(!typeDamageCheckbox.checked && !typeLossCheckbox.checked) {
@@ -282,68 +284,74 @@
             const chosenReportType = typeDamageCheckbox.checked ? 'Damage' : 'Loss';
             const generatedId = 'REP_' + Date.now() + '_' + Math.floor(Math.random() * 1000);
 
-            let reportsPool = JSON.parse(localStorage.getItem('beats_local_reports')) || [];
+            try {
+                await setDoc(doc(db, "beats_reports", generatedId), {
+                    id: generatedId,
+                    reporter: document.getElementById('reporterName').value.trim(),
+                    department: document.getElementById('reporterDepartment').value.trim(),
+                    date: reportDateInput.value,
+                    time: reportTimeInput.value,
+                    eqType: document.getElementById('equipmentType').value.trim(),
+                    eqModel: document.getElementById('equipmentModel').value.trim(),
+                    serialNo: document.getElementById('serialNumber').value.trim(),
+                    issueType: chosenReportType,
+                    description: document.getElementById('detailedDescription').value.trim(),
+                    submittedBy: currentActiveIdentity,
+                    adminResponse: "",
+                    imageAttachment: base64ImageString 
+                });
 
-            reportsPool.push({
-                id: generatedId,
-                reporter: document.getElementById('reporterName').value.trim(),
-                department: document.getElementById('reporterDepartment').value.trim(),
-                date: reportDateInput.value,
-                time: reportTimeInput.value,
-                eqType: document.getElementById('equipmentType').value.trim(),
-                eqModel: document.getElementById('equipmentModel').value.trim(),
-                serialNo: document.getElementById('serialNumber').value.trim(),
-                issueType: chosenReportType,
-                description: document.getElementById('detailedDescription').value.trim(),
-                submittedBy: currentActiveIdentity,
-                adminResponse: "",
-                imageAttachment: base64ImageString 
-            });
-
-            localStorage.setItem('beats_local_reports', JSON.stringify(reportsPool));
-
-            alert(`Success! E-Equipment report asset entry submitted successfully. Identifier: ${generatedId}`);
-            eEquipmentReportForm.reset();
-            base64ImageString = ""; 
-            configureRealtimeClockParameters();
-            fileNameDisplay.textContent = "No asset photo attached";
-            refreshFeedbackDeckDisplay();
+                alert(`Success! E-Equipment report asset entry submitted successfully. Identifier: ${generatedId}`);
+                eEquipmentReportForm.reset();
+                base64ImageString = ""; 
+                configureRealtimeClockParameters();
+                fileNameDisplay.textContent = "No asset photo attached";
+                refreshFeedbackDeckDisplay();
+            } catch (err) {
+                console.error("Cloud document writing failure: ", err);
+                alert("Error writing records to cloud servers.");
+            }
         });
 
-        function refreshFeedbackDeckDisplay() {
+        async function refreshFeedbackDeckDisplay() {
             if(!userReportsFeedbackDeck) return;
             userReportsFeedbackDeck.innerHTML = '';
             
-            const reportsPool = JSON.parse(localStorage.getItem('beats_local_reports')) || [];
-            const userReports = reportsPool.filter(item => item.submittedBy === currentActiveIdentity);
+            try {
+                const q = query(collection(db, "beats_reports"), where("submittedBy", "==", currentActiveIdentity));
+                const querySnapshot = await getDocs(q);
 
-            if(userReports.length === 0) {
-                userReportsFeedbackDeck.innerHTML = `<p style="font-size:0.85rem; color:var(--text-secondary); text-align:center; padding:10px;">No filed reports located for this account.</p>`;
-                return;
-            }
-
-            let reportsSignatureBuilder = "";
-            userReports.forEach((item) => {
-                const bubble = document.createElement('div');
-                bubble.className = "admin-reply-bubble";
-                const statusBadgeClass = item.adminResponse ? 'status-replied' : 'status-pending';
-                const statusText = item.adminResponse ? 'Replied' : 'Pending';
-                let responseSectionHTML = `<div class="reply-text-wrapper" style="color: var(--text-secondary);">⏳ Awaiting feedback reply instructions...</div>`;
-                
-                if(item.adminResponse) {
-                    responseSectionHTML = `<div style="margin-top:10px; font-weight:bold; color:var(--brand-magenta);">💬 Admin Official Reply:</div><div class="reply-text-wrapper">${item.adminResponse}</div>`;
-                    reportsSignatureBuilder += `${item.id}_${item.adminResponse.trim()}|`;
+                if(querySnapshot.empty) {
+                    userReportsFeedbackDeck.innerHTML = `<p style="font-size:0.85rem; color:var(--text-secondary); text-align:center; padding:10px;">No filed reports located for this account.</p>`;
+                    return;
                 }
-                let imageThumbnailHTML = item.imageAttachment ? `<br><img src="${item.imageAttachment}" class="report-preview-img" alt="Thumbnail">` : "";
-                
-                bubble.innerHTML = `
-                    <div style="display:flex; justify-content:space-between; align-items:center;"><strong>${item.eqModel}</strong><span class="status-badge ${statusBadgeClass}">${statusText}</span></div>
-                    <div style="font-size:0.8rem; color:var(--text-secondary); margin-top:2px;">Tag: ${item.serialNo} | Type: ${item.issueType} | Filed: ${item.date}</div>
-                    <div style="font-size:0.85rem; margin-top:6px; color: var(--text-primary);"><strong>Issue Detail:</strong> ${item.description}</div>
-                    ${imageThumbnailHTML}${responseSectionHTML}`;
-                userReportsFeedbackDeck.appendChild(bubble);
-            });
-            if(reportsSignatureBuilder !== "") localStorage.setItem('last_seen_reports_content', reportsSignatureBuilder);
+
+                let reportsSignatureBuilder = "";
+                querySnapshot.forEach((docSnapshot) => {
+                    const item = docSnapshot.data();
+                    const bubble = document.createElement('div');
+                    bubble.className = "admin-reply-bubble";
+                    const statusBadgeClass = item.adminResponse ? 'status-replied' : 'status-pending';
+                    const statusText = item.adminResponse ? 'Replied' : 'Pending';
+                    let responseSectionHTML = `<div class="reply-text-wrapper" style="color: var(--text-secondary);">⏳ Awaiting feedback reply instructions...</div>`;
+                    
+                    if(item.adminResponse) {
+                        responseSectionHTML = `<div style="margin-top:10px; font-weight:bold; color:var(--brand-magenta);">💬 Admin Official Reply:</div><div class="reply-text-wrapper">${item.adminResponse}</div>`;
+                        reportsSignatureBuilder += `${item.id}_${item.adminResponse.trim()}|`;
+                    }
+                    let imageThumbnailHTML = item.imageAttachment ? `<br><img src="${item.imageAttachment}" class="report-preview-img" alt="Thumbnail">` : "";
+                    
+                    bubble.innerHTML = `
+                        <div style="display:flex; justify-content:space-between; align-items:center;"><strong>${item.eqModel}</strong><span class="status-badge ${statusBadgeClass}">${statusText}</span></div>
+                        <div style="font-size:0.8rem; color:var(--text-secondary); margin-top:2px;">Tag: ${item.serialNo} | Type: ${item.issueType} | Filed: ${item.date}</div>
+                        <div style="font-size:0.85rem; margin-top:6px; color: var(--text-primary);"><strong>Issue Detail:</strong> ${item.description}</div>
+                        ${imageThumbnailHTML}${responseSectionHTML}`;
+                    userReportsFeedbackDeck.appendChild(bubble);
+                });
+                if(reportsSignatureBuilder !== "") localStorage.setItem('last_seen_reports_content', reportsSignatureBuilder);
+            } catch (err) {
+                console.error("Error fetching reports from database: ", err);
+            }
         }
     </script>
 </body>

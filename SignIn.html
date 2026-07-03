@@ -41,12 +41,14 @@
         </footer>
     </div>
  
-    <script>
+    <script type="module">
+        import { db, doc, getDoc } from "./firebase-config.js";
+
         if(localStorage.getItem('theme') === 'dark') {
             document.documentElement.setAttribute('data-theme', 'dark');
         }
  
-        document.getElementById('signInForm').addEventListener('submit', function(e) {
+        document.getElementById('signInForm').addEventListener('submit', async function(e) {
             e.preventDefault();
             const email = document.getElementById('email').value.trim().toLowerCase();
             const password = document.getElementById('password').value;
@@ -64,22 +66,29 @@
                     return;
                 }
             } 
-            // 2. Fetch data records from local data matching input email
+            // 2. Fetch data records from Firebase matching input email doc parameter
             else {
-                const localUsers = JSON.parse(localStorage.getItem('beats_users')) || {};
-                
-                if (localUsers[email]) {
-                    if (localUsers[email].password === password) {
-                        authenticatedUsername = email.split('@')[0];
+                try {
+                    const userDocRef = doc(db, "beats_users", email);
+                    const userSnapshot = await getDoc(userDocRef);
+
+                    if (userSnapshot.exists()) {
+                        const userData = userSnapshot.data();
+                        if (userData.password === password) {
+                            authenticatedUsername = email.split('@')[0];
+                        } else {
+                            alert('Incorrect password. Please try again.');
+                            return;
+                        }
+                    } else if (email === 'test@example.com' && password === 'password123') {
+                        authenticatedUsername = 'testuser';
                     } else {
-                        alert('Incorrect password. Please try again.');
+                        alert('No registered account found with this email. Please sign up first.');
                         return;
                     }
-                } else if (email === 'test@example.com' && password === 'password123') {
-                    // Optional fallback validation testing
-                    authenticatedUsername = 'testuser';
-                } else {
-                    alert('No registered account found with this email. Please sign up first.');
+                } catch (error) {
+                    console.error("Database lookup error:", error);
+                    alert("System connectivity fault. Please check settings.");
                     return;
                 }
             }
@@ -88,7 +97,7 @@
             alert('Welcome back! Logging into: ' + authenticatedUsername);
  
             if (isAdmin) {
-                window.location.href = 'AdminDashboard.html';
+                window.location.href = 'adminDashboard.html';
             } else {
                 window.location.href = 'user.html';
             }

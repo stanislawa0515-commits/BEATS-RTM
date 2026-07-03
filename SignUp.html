@@ -45,12 +45,14 @@
         </footer>
     </div>
 
-    <script>
+    <script type="module">
+        import { db, doc, getDoc, setDoc } from "./firebase-config.js";
+
         if (localStorage.getItem('beats-theme') === 'light') {
             document.documentElement.setAttribute('data-theme', 'light');
         }
 
-        document.getElementById('signUpForm').addEventListener('submit', function(e) {
+        document.getElementById('signUpForm').addEventListener('submit', async function(e) {
             e.preventDefault();
             
             const email = document.getElementById('email').value.trim().toLowerCase();
@@ -67,25 +69,28 @@
                 return;
             }
 
-            // Verify if profile already documented in Local Registry
-            let localUsers = JSON.parse(localStorage.getItem('beats_users')) || {};
+            try {
+                const userDocRef = doc(db, "beats_users", email);
+                const userSnapshot = await getDoc(userDocRef);
 
-            if (localUsers[email]) {
-                alert('This email is already registered to an account.');
-                return;
+                if (userSnapshot.exists()) {
+                    alert('This email is already registered to an account.');
+                    return;
+                }
+
+                await setDoc(userDocRef, {
+                    email: email,
+                    password: password,
+                    createdAt: Date.now()
+                });
+
+                alert('Registration complete! You can now Sign In.');
+                window.location.href = 'SignIn.html';
+
+            } catch (error) {
+                console.error("Database registration issue:", error);
+                alert("Error writing records to cloud servers. Try again.");
             }
-
-            // Create account inside local storage records
-            localUsers[email] = {
-                email: email,
-                password: password,
-                createdAt: Date.now()
-            };
-
-            localStorage.setItem('beats_users', JSON.stringify(localUsers));
-
-            alert('Registration complete! You can now Sign In.');
-            window.location.href = 'SignIn.html';
         });
     </script>
 </body>

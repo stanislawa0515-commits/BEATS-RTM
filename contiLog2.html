@@ -44,7 +44,7 @@
         .row-btn-edit:disabled { background-color: #cccccc; color: #666; cursor: not-allowed; }
         .row-btn-delete { background-color: #dc3545; }
     </style>
-</head>
+</body >
 <body class="page-body-layout">
  
     <div class="menu-header-bar">
@@ -114,8 +114,10 @@
     <footer>
         <p>© 2026 RTM Bintulu. All rights reserved.</p>
     </footer>
- 
-    <script>
+
+    <script type="module">
+        import { db, doc, getDoc, setDoc } from "./firebase-config.js";
+
         const openMenuToggle = document.getElementById('openMenuToggle');
         const closeMenuToggle = document.getElementById('closeMenuToggle');
         const sidebarDrawer = document.getElementById('sidebarDrawer');
@@ -173,7 +175,7 @@
         document.getElementById('lblDate').textContent = activeDate;
         document.getElementById('lblInterval').textContent = activeInterval;
  
-        const storageKeyPointer = `beats_sheet_${rawPerson}_${activeDate}_${activeInterval.replace(/\s+/g, '')}`;
+        const storageKeyPointer = `${rawPerson}_${activeDate}_${activeInterval.replace(/\s+/g, '')}`;
         const tableBody = document.getElementById('tableLogBody');
  
         function generateTimeDropdowns(savedHour='', savedMin='', savedAmpm='') {
@@ -201,7 +203,7 @@
             return `<div class="row-time-select-container">${hHTML}<span>:</span>${mHTML}${apHTML}</div>`;
         }
  
-        function createLogTableRow(dataObj = {}, isSaved = false) {
+        window.createLogTableRow = function(dataObj = {}, isSaved = false) {
             const tr = document.createElement('tr');
                
             const hourVal = dataObj.hour || '09';
@@ -247,7 +249,7 @@
             tr.querySelector('.row-btn-delete').addEventListener('click', (e) => deleteIndividualRow(e.target));
 
             tableBody.appendChild(tr);
-        }
+        };
  
         function toggleRowInputState(trRow, enabled) {
             const selectElements = trRow.querySelectorAll('select');
@@ -263,7 +265,7 @@
                 btnSave.disabled = false;
                 btnEdit.disabled = true;
             } else {
-                btnSave.disabled = false;
+                btnSave.disabled = true;
                 btnEdit.disabled = false;
             }
         }
@@ -283,7 +285,7 @@
             toggleRowInputState(tr, true);
         }
  
-        function deleteIndividualRow(buttonElement) {
+        async function deleteIndividualRow(buttonElement) {
             const tr = buttonElement.closest('tr');
                
             if(confirm("Permanently remove this row entry from current view log?")) {
@@ -308,13 +310,17 @@
                     }
                 });
 
-                localStorage.setItem(storageKeyPointer, JSON.stringify({
-                    metaPerson: rawPerson,
-                    metaDate: activeDate,
-                    metaInterval: activeInterval,
-                    rows: updatedPayload,
-                    updatedAt: Date.now()
-                }));
+                try {
+                    await setDoc(doc(db, "beats_conti_sheets", storageKeyPointer), {
+                        metaPerson: rawPerson,
+                        metaDate: activeDate,
+                        metaInterval: activeInterval,
+                        rows: updatedPayload,
+                        updatedAt: Date.now()
+                    });
+                } catch(err) {
+                    console.error("Auto delete sync failure:", err);
+                }
 
                 if (tableBody.children.length === 0) {
                     createLogTableRow({}, false);
@@ -322,19 +328,21 @@
             }
         }
  
-        function initialWorkspaceLoader() {
-            const localData = localStorage.getItem(storageKeyPointer);
-
-            if (localData) {
-                const snapshot = JSON.parse(localData);
-                const datasetsParsed = snapshot.rows || [];
-                if (datasetsParsed.length > 0) {
-                    tableBody.innerHTML = '';
-                    datasetsParsed.forEach(item => {
-                        createLogTableRow(item, true);
-                    });
-                    return;
+        async function initialWorkspaceLoader() {
+            try {
+                const docSnap = await getDoc(doc(db, "beats_conti_sheets", storageKeyPointer));
+                if (docSnap.exists()) {
+                    const datasetsParsed = docSnap.data().rows || [];
+                    if (datasetsParsed.length > 0) {
+                        tableBody.innerHTML = '';
+                        datasetsParsed.forEach(item => {
+                            createLogTableRow(item, true);
+                        });
+                        return;
+                    }
                 }
+            } catch (err) {
+                console.error("Firebase fetch failure:", err);
             }
             tableBody.innerHTML = '';
             createLogTableRow({}, false);
@@ -344,7 +352,7 @@
             createLogTableRow({}, false);
         });
  
-        document.getElementById('btnSaveChanges').addEventListener('click', () => {
+        document.getElementById('btnSaveChanges').addEventListener('click', async () => {
             const completeRows = tableBody.querySelectorAll('tr');
             const savedDatasetPayload = [];
             let verificationAlertStatus = true;
@@ -370,31 +378,26 @@
                 if(!confirmChoice) return;
             }
  
-            localStorage.setItem(storageKeyPointer, JSON.stringify({
-                metaPerson: rawPerson,
-                metaDate: activeDate,
-                metaInterval: activeInterval,
-                rows: savedDatasetPayload,
-                updatedAt: Date.now()
-            }));
-            
-            // Mirror a registry sync point for the main dashboard layout counters
-            let sheetsRegistry = JSON.parse(localStorage.getItem('beats_local_sheets_registry')) || [];
-            if(!sheetsRegistry.includes(storageKeyPointer)) {
-                sheetsRegistry.push(storageKeyPointer);
-                localStorage.setItem('beats_local_sheets_registry', JSON.stringify(sheetsRegistry));
+            try {
+                await setDoc(doc(db, "beats_conti_sheets", storageKeyPointer), {
+                    metaPerson: rawPerson,
+                    metaDate: activeDate,
+                    metaInterval: activeInterval,
+                    rows: savedDatasetPayload,
+                    updatedAt: Date.now()
+                });
+                alert('Conti Sheet logs records saved successfully to cloud repository!');
+                initialWorkspaceLoader();
+            } catch (err) {
+                console.error("Firebase collection save failure:", err);
+                alert("Cloud system sync operation failed.");
             }
-
-            alert('Conti Sheet logs records saved successfully to storage array!');
-            initialWorkspaceLoader();
         });
  
-        document.getElementById('btnPrintLog').addEventListener('click', () => { window.print(); });
-           
         if (logoutActionLink) {
             logoutActionLink.addEventListener('click', () => {
-                localStorage.removeItem('currentUser');
-                sessionStorage.removeItem('activeProfileName');
+                localStorage.clear();
+                sessionStorage.clear();
             });
         }
 
